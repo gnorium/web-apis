@@ -18,8 +18,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/gnorium/web-types", from: "1.0.0"),
-        .package(url: "https://github.com/gnorium/embedded-swift-utilities", from: "1.0.0")
+        .package(url: "https://github.com/gnorium/web-types", branch: "main"),
+        .package(url: "https://github.com/gnorium/embedded-swift-utilities", branch: "main")
     ],
     targets: [
         .target(
