@@ -1,6 +1,6 @@
 #if os(WASI)
 
-import Utilities
+import EmbeddedSwiftUtilities
 
 public struct DOMTokenList: Sendable {
 	let elementId: Int32

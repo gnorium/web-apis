@@ -1,6 +1,6 @@
 #if os(WASI)
 
-import Utilities
+import EmbeddedSwiftUtilities
 
 public struct Window: Sendable {
 	public final class Location: @unchecked Sendable {

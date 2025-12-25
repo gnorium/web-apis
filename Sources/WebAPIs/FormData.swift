@@ -1,6 +1,6 @@
 #if os(WASI)
 
-import Utilities
+import EmbeddedSwiftUtilities
 
 public struct FormData: Sendable {
 	let formId: Int32

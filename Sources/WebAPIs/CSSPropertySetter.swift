@@ -1,6 +1,6 @@
 #if os(WASI)
 
-import Utilities
+import EmbeddedSwiftUtilities
 import WebTypes
 
 // Generic property setter for all other CSS properties

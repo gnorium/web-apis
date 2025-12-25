@@ -1,6 +1,6 @@
 #if os(WASI)
 
-import Utilities
+import EmbeddedSwiftUtilities
 
 public struct MediaQueryList: @unchecked Sendable {
 	let ptr: UnsafeRawPointer?

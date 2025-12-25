@@ -1,6 +1,6 @@
 #if os(WASI)
 
-import Utilities
+import EmbeddedSwiftUtilities
 
 public struct Storage: Sendable {
 	public func getItem(_ key: String) -> String? {

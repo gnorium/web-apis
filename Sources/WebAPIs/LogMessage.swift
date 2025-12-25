@@ -1,6 +1,6 @@
 #if os(WASI)
 
-import Utilities
+import EmbeddedSwiftUtilities
 
 public struct LogMessage: ExpressibleByStringInterpolation {
 	let staticMessage: StaticString?

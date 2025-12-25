@@ -1,6 +1,6 @@
 #if os(WASI)
 
-import Utilities
+import EmbeddedSwiftUtilities
 
 @dynamicCallable
 public struct ElementPropertySetter: Sendable {
