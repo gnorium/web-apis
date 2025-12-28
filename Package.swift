@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "WebAPIs",
+    name: "web-apis",
     platforms: [
         .macOS(.v14),
         .iOS(.v17),
