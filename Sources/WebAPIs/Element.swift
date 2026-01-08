@@ -245,6 +245,16 @@ public struct Element: Sendable {
 		element_blur(id)
 	}
 
+	/// Begins an SVG animation element (like <animate>)
+	public func beginElement() {
+		element_beginElement(id)
+	}
+
+	/// Ends an SVG animation element
+	public func endElement() {
+		element_endElement(id)
+	}
+
 	public func closest(_ selector: String) -> Element? {
         var buffer = Array(selector.utf8)
         buffer.append(0)
@@ -643,5 +653,11 @@ func element_fetch(_ elementId: Int32, _ urlPointer: UnsafePointer<CChar>, _ url
 
 @_extern(wasm, module: "env", name: "element_scrollIntoView")
 func element_scrollIntoView(_ elementId: Int32)
+
+@_extern(wasm, module: "env", name: "element_beginElement")
+func element_beginElement(_ elementId: Int32)
+
+@_extern(wasm, module: "env", name: "element_endElement")
+func element_endElement(_ elementId: Int32)
 
 #endif

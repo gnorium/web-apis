@@ -1,6 +1,7 @@
 #if os(WASI)
 
 import EmbeddedSwiftUtilities
+import WebTypes
 
 public struct Window: Sendable {
 	public final class Location: @unchecked Sendable {
@@ -92,6 +93,15 @@ public struct Window: Sendable {
 
 	public func clearTimeout(_ timerId: Int32) {
 		window_clearTimeout(timerId)
+	}
+
+	/// Standard scrollTo API - scrolls to specified coordinates
+	/// - Parameters:
+	///   - x: X coordinate to scroll to
+	///   - y: Y coordinate to scroll to
+	///   - behavior: 0 for auto (default), 1 for smooth
+	public func scrollTo(_ x: Double, _ y: Double, behavior: ScrollBehavior = .auto) {
+		window_scrollTo(x, y, Int32(behavior.rawValue))
 	}
 
 	public var location: Location {
@@ -210,6 +220,9 @@ func window_setTimeout(_ ms: Double, _ callbackId: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "window_clearTimeout")
 func window_clearTimeout(_ timerId: Int32)
+
+@_extern(wasm, module: "env", name: "window_scrollTo")
+func window_scrollTo(_ x: Double, _ y: Double, _ behavior: Int32)
 
 @_extern(wasm, module: "env", name: "window_getLocationHref")
 func window_getLocationHref(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
