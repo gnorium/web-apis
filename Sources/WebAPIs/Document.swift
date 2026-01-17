@@ -65,6 +65,24 @@ public struct Document: Sendable {
 		}
 	}
 
+	public func createElementNS(_ namespace: String, _ tagName: String) -> Element {
+		var nsBuffer = Array(namespace.utf8)
+		nsBuffer.append(0)
+		var tagBuffer = Array(tagName.utf8)
+		tagBuffer.append(0)
+		
+		return nsBuffer.withUnsafeBufferPointer { nsBufPtr in
+			nsBufPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: nsBuffer.count) { nsPointer in
+				tagBuffer.withUnsafeBufferPointer { tagBufPtr in
+					tagBufPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: tagBuffer.count) { tagPointer in
+						let id = document_createElementNS(nsPointer, Int32(nsBuffer.count - 1), tagPointer, Int32(tagBuffer.count - 1))
+						return Element(id: id)
+					}
+				}
+			}
+		}
+	}
+
 	public func createElement(_ tag: TagName) -> Element {
 		return createElement(tag.value)
 	}
@@ -85,17 +103,20 @@ public struct Document: Sendable {
 }
 
 extension Document: EventTarget {
-	public func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) {
+	@discardableResult
+	public func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Document {
 		let callbackId = CallbackRegistry.register(handler)
 		event.withUTF8Buffer { buffer in
 			buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
 				document_addEventListener(pointer, Int32(buffer.count), Int32(callbackId))
 			}
 		}
+		return self
 	}
 
-	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) {
-		addEventListener(event.staticString, handler)
+	@discardableResult
+	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Document {
+		return addEventListener(event.staticString, handler)
 	}
 
 	public func removeEventListener(_ event: StaticString) {
@@ -145,6 +166,9 @@ func document_dispatchCustomEvent(_ eventPointer: Int32)
 
 @_extern(wasm, module: "env", name: "document_createElement")
 func document_createElement(_ tagNamePointer: UnsafePointer<CChar>, _ tagNameLen: Int32) -> Int32
+
+@_extern(wasm, module: "env", name: "document_createElementNS")
+func document_createElementNS(_ nsPointer: UnsafePointer<CChar>, _ nsLen: Int32, _ tagPointer: UnsafePointer<CChar>, _ tagLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "document_querySelector")
 func document_querySelector(_ selectorPointer: UnsafePointer<CChar>, _ selectorLen: Int32) -> Int32

@@ -93,6 +93,29 @@ public struct CSSStyleDeclaration: Sendable {
             }
         }
     }
+
+    // MARK: - CSSPropertyName Overloads
+
+    public func setProperty(_ property: CSSPropertyName, _ value: String) {
+        setProperty(property.rawValue, value)
+    }
+
+    public func setProperty(_ property: CSSPropertyName, _ value: StaticString) {
+        setProperty(property.rawValue, value)
+    }
+
+    public func setProperty(_ property: CSSPropertyName, _ value: Double) {
+        setProperty(property.rawValue, doubleToString(value))
+    }
+
+    public func setProperty(_ property: CSSPropertyName, _ value: Int) {
+        setProperty(property.rawValue, intToString(value))
+    }
+
+    public func setProperty(_ property: CSSPropertyName, _ filters: CSSFilterFunction...) {
+        let stringValue = stringJoin(filters.map { $0.value }, separator: " ")
+        setProperty(property.rawValue, stringValue)
+    }
 	
 	public func background(_ value: CSSColor) {
 		setProperty("background", value.value)
@@ -228,6 +251,14 @@ public struct CSSStyleDeclaration: Sendable {
 
 	public var visibility: CSSVisibilitySetter {
 		return CSSVisibilitySetter(elementId: elementId)
+	}
+
+	public var animationPlayState: CSSPropertySetter {
+		return CSSPropertySetter(elementId: elementId, property: "animation-play-state")
+	}
+
+	public var transform: CSSTransformSetter {
+		return CSSTransformSetter(elementId: elementId)
 	}
 
 	// Helper for border with 3 parameters

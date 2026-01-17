@@ -233,6 +233,11 @@ public struct Element: Sendable {
 		element_remove(id)
 	}
 
+	public var parentElement: Element? {
+		let parentId = element_parentElement(id)
+		return parentId >= 0 ? Element(id: parentId) : nil
+	}
+
 	public func click() {
 		element_click(id)
 	}
@@ -465,17 +470,20 @@ public struct Element: Sendable {
 }
 
 extension Element: EventTarget {
-	public func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) {
+	@discardableResult
+	public func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
 		let callbackId = CallbackRegistry.register(handler)
 		event.withUTF8Buffer { buffer in
 			buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
 				element_addEventListener(id, pointer, Int32(buffer.count), Int32(callbackId))
 			}
 		}
+		return self
 	}
 
-	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) {
-		addEventListener(event.staticString, handler)
+	@discardableResult
+	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
+		return addEventListener(event.staticString, handler)
 	}
 
 	public func removeEventListener(_ event: StaticString) {
@@ -502,15 +510,6 @@ extension Element: EventTarget {
 		element_dispatchCustomEvent(id, event.pointer)
 	}
 
-	public func on(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
-		addEventListener(event, handler)
-		return self
-	}
-
-	public func on(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
-		addEventListener(event.staticString, handler)
-		return self
-	}
 }
 
 @_extern(wasm, module: "env", name: "element_addEventListener")
@@ -596,6 +595,9 @@ func element_querySelectorAll(_ elementId: Int32, _ selectorPointer: UnsafePoint
 
 @_extern(wasm, module: "env", name: "element_remove")
 func element_remove(_ elementId: Int32)
+
+@_extern(wasm, module: "env", name: "element_parentElement")
+func element_parentElement(_ elementId: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_click")
 func element_click(_ elementId: Int32)

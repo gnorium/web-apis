@@ -60,7 +60,7 @@ public struct Window: Sendable {
 		window_dispatchEvent(Int32(event.id))
 	}
 
-	public func on(_ eventName: String, _ handler: @escaping @Sendable (CallbackString) -> Void) {
+	public func addEventListener(_ eventName: String, _ handler: @escaping @Sendable (CallbackString) -> Void) {
 		let callbackId = CallbackRegistry.register(handler)
 		var buffer = Array(eventName.utf8)
 		buffer.append(0)
@@ -72,15 +72,20 @@ public struct Window: Sendable {
 		}
 	}
 
-	public func on(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) {
-		on(event.rawValue, handler)
+	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) {
+		addEventListener(event.rawValue, handler)
 	}
 
-	public func requestAnimationFrame(_ callback: @escaping @Sendable () -> Void) {
+	@discardableResult
+	public func requestAnimationFrame(_ callback: @escaping @Sendable () -> Void) -> Int32 {
 		let callbackId = CallbackRegistry.register { _ in
 			callback()
 		}
-		window_requestAnimationFrame(Int32(callbackId))
+		return window_requestAnimationFrame(Int32(callbackId))
+	}
+
+	public func cancelAnimationFrame(_ id: Int32) {
+		window_cancelAnimationFrame(id)
 	}
 
 	@discardableResult
@@ -213,7 +218,10 @@ func window_dispatchEvent(_ elementId: Int32)
 func window_addEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackId: Int32)
 
 @_extern(wasm, module: "env", name: "window_requestAnimationFrame")
-func window_requestAnimationFrame(_ callbackId: Int32)
+func window_requestAnimationFrame(_ callbackId: Int32) -> Int32
+
+@_extern(wasm, module: "env", name: "window_cancelAnimationFrame")
+func window_cancelAnimationFrame(_ id: Int32)
 
 @_extern(wasm, module: "env", name: "window_setTimeout")
 func window_setTimeout(_ ms: Double, _ callbackId: Int32) -> Int32

@@ -39,6 +39,12 @@ public struct CSSPropertySetter: Sendable {
 		setPropertyStaticString(value.staticRawValue)
 	}
 
+	// Concrete overload for CSSSingleAnimationPlayState
+	public func dynamicallyCall(withArguments args: [CSSSingleAnimationPlayState]) {
+		guard let value = args.first else { return }
+		setPropertyValue(value.rawValue)
+	}
+
 	// Concrete overload for CSSKeyword.Global
 	public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
 		guard let value = args.first else { return }
@@ -102,10 +108,13 @@ public struct CSSPropertySetter: Sendable {
 		setPropertyValue(value.rawValue)
 	}
 
-	// Concrete overload for CSSTransformFunction
+	// Concrete overload for CSSTransformFunction (multiple values)
 	public func dynamicallyCall(withArguments args: [CSSTransformFunction]) {
-		guard let value = args.first else { return }
-		setPropertyValue(value.value)
+		if args.count == 1 {
+			setPropertyValue(args[0].value)
+		} else {
+			setPropertyValue(stringJoin(args.map { $0.value }, separator: " "))
+		}
 	}
 
 	// CSSDisplay and CSSOverflow removed - use CSSDisplaySetter and CSSOverflowSetter instead
@@ -126,6 +135,32 @@ public struct CSSPropertySetter: Sendable {
 
 	// Concrete overload for CSSCursor
 	public func dynamicallyCall(withArguments args: [CSSCursor]) {
+		guard let value = args.first else { return }
+		setPropertyValue(value.value)
+	}
+
+	// Concrete overload for CSSFilterFunction (multiple values)
+	public func dynamicallyCall(withArguments args: [CSSFilterFunction]) {
+		if args.count == 1 {
+			setPropertyValue(args[0].value)
+		} else {
+			setPropertyValue(stringJoin(args.map { $0.value }, separator: " "))
+		}
+	}
+
+	// Concrete overload for Double (single or multiple values)
+	public func dynamicallyCall(withArguments args: [Double]) {
+		let stringValue: String
+		if args.count == 1 {
+			stringValue = doubleToString(args[0])
+		} else {
+			stringValue = stringJoin(args.map { doubleToString($0) }, separator: " ")
+		}
+		setPropertyValue(stringValue)
+	}
+
+	// Concrete overload for CSSColor
+	public func dynamicallyCall(withArguments args: [CSSColor]) {
 		guard let value = args.first else { return }
 		setPropertyValue(value.value)
 	}

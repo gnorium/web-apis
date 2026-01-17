@@ -54,15 +54,23 @@ public struct CallbackString: @unchecked Sendable {
 		return targetId >= 0 ? Element(id: targetId) : nil
 	}
 
-	public var detail: String {
-		var buffer = [CChar](repeating: 0, count: 4096)
-		let written = event_detail(ptr, Int32(len), &buffer, 4096)
-		if written > 0 {
-			let bytes = buffer.prefix(Int(written)).map { UInt8(bitPattern: $0) }
-			return String(decoding: bytes, as: UTF8.self)
-		}
-		return ""
-	}
+    public var detail: String {
+        var buffer = [CChar](repeating: 0, count: 4096)
+        let written = event_detail(ptr, Int32(len), &buffer, 4096)
+        if written > 0 {
+            let bytes = buffer.prefix(Int(written)).map { UInt8(bitPattern: $0) }
+            return String(decoding: bytes, as: UTF8.self)
+        }
+        return ""
+    }
+
+    public var clientX: Double {
+        event_clientX(ptr, Int32(len))
+    }
+
+    public var clientY: Double {
+        event_clientY(ptr, Int32(len))
+    }
 }
 
 @_extern(wasm, module: "env", name: "event_key")
@@ -79,5 +87,11 @@ fileprivate func event_target(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int3
 
 @_extern(wasm, module: "env", name: "event_detail")
 fileprivate func event_detail(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<CChar>, _ bufferLen: Int32) -> Int32
+
+@_extern(wasm, module: "env", name: "event_clientX")
+fileprivate func event_clientX(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
+
+@_extern(wasm, module: "env", name: "event_clientY")
+fileprivate func event_clientY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
 
 #endif
