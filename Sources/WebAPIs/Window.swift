@@ -29,6 +29,18 @@ public struct Window: Sendable {
 			}
 		}
 
+		public var pathname: String {
+			let bufferSize = 1024
+			let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+			defer { buffer.deallocate() }
+			let len = window_getLocationPathname(buffer, Int32(bufferSize))
+			if len > 0 {
+				let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
+				return String(decoding: bytes, as: UTF8.self)
+			}
+			return ""
+		}
+
 		public init() {}
 	}
 
@@ -157,6 +169,18 @@ public struct Window: Sendable {
 		}
 	}
 
+	public func confirm(_ message: String) -> Bool {
+		var buffer = Array(message.utf8)
+		buffer.append(0)
+
+		return buffer.withUnsafeBufferPointer { ptr in
+			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+				let result = window_confirm(pointer, Int32(buffer.count - 1))
+				return result != 0
+			}
+		}
+	}
+
 	public func fetch(_ url: String, method: String = "GET", body: String? = nil, _ callback: @escaping @Sendable (FetchResponse) -> Void) {
 		let callbackId = CallbackRegistry.register { result in
 			callback(FetchResponse(jsonString: result.toString()))
@@ -202,6 +226,9 @@ public let window = Window()
 @_extern(wasm, module: "env", name: "window_alert")
 func window_alert(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32)
 
+@_extern(wasm, module: "env", name: "window_confirm")
+func window_confirm(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32) -> Int32
+
 @_extern(wasm, module: "env", name: "window_fetch")
 func window_fetch(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ methodPointer: UnsafePointer<CChar>, _ methodLen: Int32, _ bodyPointer: UnsafePointer<CChar>?, _ bodyLen: Int32, _ callbackId: Int32)
 
@@ -234,6 +261,9 @@ func window_scrollTo(_ x: Double, _ y: Double, _ behavior: Int32)
 
 @_extern(wasm, module: "env", name: "window_getLocationHref")
 func window_getLocationHref(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+
+@_extern(wasm, module: "env", name: "getLocationPathname")
+func window_getLocationPathname(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "window_setLocationHref")
 func window_setLocationHref(_ hrefPointer: UnsafePointer<CChar>, _ hrefLen: Int32)

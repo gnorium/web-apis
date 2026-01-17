@@ -45,6 +45,17 @@ public struct Document: Sendable {
         }
 	}
 
+	public func getElementById(_ id: String) -> Element? {
+		var buffer = Array(id.utf8)
+		buffer.append(0)
+		return buffer.withUnsafeBufferPointer { bufferPtr in
+			bufferPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+				let elementId = document_getElementById(pointer, Int32(buffer.count - 1))
+				return elementId >= 0 ? Element(id: elementId) : nil
+			}
+		}
+	}
+
 	public func createElement(_ tagName: String) -> Element {
         var buffer = Array(tagName.utf8)
         buffer.append(0)
@@ -181,5 +192,8 @@ func document_fontsReady(_ callbackId: Int32)
 
 @_extern(wasm, module: "env", name: "document_getActiveElement")
 func document_getActiveElement() -> Int32
+
+@_extern(wasm, module: "env", name: "document_getElementById")
+func document_getElementById(_ idPointer: UnsafePointer<CChar>, _ idLen: Int32) -> Int32
 
 #endif
