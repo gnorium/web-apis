@@ -156,7 +156,25 @@ public struct Window: Sendable {
 		}
 	}
 
+	public struct Navigator: Sendable {
+		public struct Clipboard: Sendable {
+			public init() {}
+			public func writeText(_ text: String) {
+				var buffer = Array(text.utf8)
+				buffer.append(0)
+				buffer.withUnsafeBufferPointer { ptr in
+					ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+						navigator_clipboard_writeText(pointer, Int32(buffer.count - 1))
+					}
+				}
+			}
+		}
+		public let clipboard = Clipboard()
+		public init() {}
+	}
+
 	public let performance = Performance()
+	public let navigator = Navigator()
 
 	public func alert(_ message: String) {
 		var buffer = Array(message.utf8)
@@ -280,6 +298,9 @@ func window_createObjectURL(_ blobId: Int32, _ buffer: UnsafeMutablePointer<Int8
 
 @_extern(wasm, module: "env", name: "window_revokeObjectURL")
 func window_revokeObjectURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
+
+@_extern(wasm, module: "env", name: "navigator_clipboard_writeText")
+func navigator_clipboard_writeText(_ textPointer: UnsafePointer<CChar>, _ textLen: Int32)
 
 @_extern(wasm, module: "env", name: "canvas_toBlob")
 public func canvas_toBlob(_ canvasId: Int32, _ callbackId: Int32)
