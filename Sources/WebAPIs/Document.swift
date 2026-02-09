@@ -113,7 +113,7 @@ public struct Document: Sendable {
 
 }
 
-extension Document: EventTarget {
+extension Document: EventTargetProtocol {
 	@discardableResult
 	public func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Document {
 		let callbackId = CallbackRegistry.register(handler)

@@ -2,7 +2,7 @@
 
 import WebTypes
 
-extension CSSKeyword.None: CSSPropertyValue {
+extension CSSKeyword.None: CSSPropertyValueProtocol {
 	public var rawValue: StaticString {
 		switch self {
 		case .none: return "none"
@@ -10,7 +10,7 @@ extension CSSKeyword.None: CSSPropertyValue {
 	}
 }
 
-extension CSSKeyword.Auto: CSSPropertyValue {
+extension CSSKeyword.Auto: CSSPropertyValueProtocol {
 	public var rawValue: StaticString {
 		switch self {
 		case .auto: return "auto"
@@ -18,7 +18,7 @@ extension CSSKeyword.Auto: CSSPropertyValue {
 	}
 }
 
-extension CSSKeyword.Global: CSSPropertyValue {
+extension CSSKeyword.Global: CSSPropertyValueProtocol {
 	public var rawValue: StaticString {
 		switch self {
 		case .inherit: return "inherit"

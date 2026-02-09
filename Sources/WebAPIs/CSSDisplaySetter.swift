@@ -7,24 +7,62 @@ import WebTypes
 public struct CSSDisplaySetter: Sendable {
 	let elementId: Int32
 
-	// Main overload for unified CSSDisplay
-	public func dynamicallyCall(withArguments args: [CSSDisplay]) {
-		guard let value = args.first else { return }
-		let stringValue = value.rawValue
+	// Helper to set display value from StaticString
+	private func setDisplay(_ staticValue: StaticString) {
 		var propBuffer = Array("display".utf8)
 		propBuffer.append(0)
-		var valueBuffer = Array(stringValue.utf8)
-		valueBuffer.append(0)
 
-		propBuffer.withUnsafeBufferPointer { propPtr in
-			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
-				valueBuffer.withUnsafeBufferPointer { valPtr in
-					valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-						element_setStyleProperty(elementId, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+		staticValue.withUTF8Buffer { utf8Buffer in
+			var valueBuffer = Array(utf8Buffer)
+			valueBuffer.append(0)
+
+			propBuffer.withUnsafeBufferPointer { propPtr in
+				propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
+					valueBuffer.withUnsafeBufferPointer { valPtr in
+						valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
+							element_setStyleProperty(elementId, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+						}
 					}
 				}
 			}
 		}
+	}
+
+	// Overloads for sub-enums
+	public func dynamicallyCall(withArguments args: [CSSDisplay.Outside]) {
+		guard let value = args.first else { return }
+		setDisplay(value.staticRawValue)
+	}
+
+	public func dynamicallyCall(withArguments args: [CSSDisplay.Inside]) {
+		guard let value = args.first else { return }
+		setDisplay(value.staticRawValue)
+	}
+
+	public func dynamicallyCall(withArguments args: [CSSDisplay.ListItem]) {
+		guard let value = args.first else { return }
+		setDisplay(value.staticRawValue)
+	}
+
+	public func dynamicallyCall(withArguments args: [CSSDisplay.Internal]) {
+		guard let value = args.first else { return }
+		setDisplay(value.staticRawValue)
+	}
+
+	public func dynamicallyCall(withArguments args: [CSSDisplay.Box]) {
+		guard let value = args.first else { return }
+		setDisplay(value.staticRawValue)
+	}
+
+	public func dynamicallyCall(withArguments args: [CSSDisplay.Legacy]) {
+		guard let value = args.first else { return }
+		setDisplay(value.staticRawValue)
+	}
+
+	// Overload for none keyword
+	public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
+		guard let value = args.first else { return }
+		setDisplay(value.staticRawValue)
 	}
 }
 

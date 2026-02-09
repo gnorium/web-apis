@@ -10,6 +10,18 @@ public struct Element: Sendable {
 		getAttribute("id")
 	}
 
+	public var tagName: String {
+		let bufferSize = 64
+		let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+		defer { buffer.deallocate() }
+		let len = element_getTagName(id, buffer, Int32(bufferSize))
+		if len > 0 {
+			let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
+			return String(decoding: bytes, as: UTF8.self)
+		}
+		return ""
+	}
+
 	// Static tag name members for createElement shorthand
 	public static let span: StaticString = "span"
 	public static let li: StaticString = "li"
@@ -146,33 +158,42 @@ public struct Element: Sendable {
 		}
 	}
 
-	public func setAttribute(_ name: HTMLAttributeName.ARIASelected, _ value: Bool) {
-		setAttribute("aria-selected", value ? "true" : "false")
-	}
-	
-	public func setAttribute(_ name: HTMLAttributeName.ARIAHidden, _ value: Bool) {
-		setAttribute("aria-hidden", value ? "true" : "false")
+	// Type-safe setAttribute overloads - Swift resolves based on value type
+	public func setAttribute(_ name: HTMLAttributeName, _ value: String) {
+		setAttribute(name.rawValue, value)
 	}
 
-	public func setAttribute(_ name: HTMLAttributeName.Tabindex, _ value: Int) {
-		let valueStr = intToString(value)
-		setAttribute("tabindex", valueStr)
+	public func setAttribute(_ name: HTMLAttributeName, _ value: Bool) {
+		setAttribute(name.rawValue, value ? "true" : "false")
 	}
 
+	public func setAttribute(_ name: String, _ value: Bool) {
+		setAttribute(name, value ? "true" : "false")
+	}
+
+	public func setAttribute(_ name: HTMLAttributeName, _ value: Int) {
+		setAttribute(name.rawValue, intToString(value))
+	}
+
+	// Specific overloads with marker types for unambiguous value resolution
+	// .type accepts HTMLButton.Type (for <button>) or HTMLInput.Type (for <input>)
+	// Qualify at call site for semantic accuracy: HTMLButton.Type.button vs HTMLInput.Type.text
 	public func setAttribute(_ name: HTMLAttributeName.`Type`, _ value: HTMLButton.`Type`) {
 		setAttribute("type", value.rawValue)
 	}
 
+	public func setAttribute(_ name: HTMLAttributeName.`Type`, _ value: HTMLInput.`Type`) {
+		setAttribute("type", value.rawValue)
+	}
+
+	// .role only accepts ARIARole
 	public func setAttribute(_ name: HTMLAttributeName.Role, _ value: ARIARole) {
 		setAttribute("role", value.rawValue)
 	}
 
-	public func setAttribute(_ name: HTMLAttributeName.ARIALive, _ value: ARIALive) {
+	// .ariaLive only accepts ARIALive
+	public func setAttribute(_ name: HTMLAttributeName.AriaLive, _ value: ARIALive) {
 		setAttribute("aria-live", value.rawValue)
-	}
-	
-	public func setAttribute(_ name: HTMLAttributeName.ARIALabel, _ value: String) {
-		setAttribute("aria-label", value)
 	}
 
 	public func setProperty(_ name: String, _ value: String) {
@@ -212,8 +233,22 @@ public struct Element: Sendable {
         }
 	}
 
+	public func appendText(_ text: String) {
+		var buffer = Array(text.utf8)
+		buffer.append(0)
+		buffer.withUnsafeBufferPointer { bufferPtr in
+			bufferPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+				element_appendText(id, pointer, Int32(buffer.count - 1))
+			}
+		}
+	}
+
 	public func appendChild(_ child: Element) {
 		element_appendChild(id, child.id)
+	}
+
+	public func insertBefore(_ newChild: Element, _ referenceChild: Element) {
+		element_insertBefore(id, newChild.id, referenceChild.id)
 	}
 
 	public func removeChild(_ child: Element) {
@@ -250,12 +285,12 @@ public struct Element: Sendable {
 		element_blur(id)
 	}
 
-	/// Begins an SVG animation element (like <animate>)
+	/// Begins an SVGProtocol animation element (like <animate>)
 	public func beginElement() {
 		element_beginElement(id)
 	}
 
-	/// Ends an SVG animation element
+	/// Ends an SVGProtocol animation element
 	public func endElement() {
 		element_endElement(id)
 	}
@@ -369,14 +404,31 @@ public struct Element: Sendable {
 
 	public var textContent: String? {
 		get {
-			var buffer = [CChar](repeating: 0, count: 4096)
-			let bufferCount = buffer.count
-			return buffer.withUnsafeMutableBufferPointer { bufferPtr in
-				guard let baseAddress = bufferPtr.baseAddress else { return nil }
-				let length = element_getTextContent(id, baseAddress, Int32(bufferCount))
-				guard length > 0 else { return nil }
-				return String(cString: baseAddress)
+			let initialSize = 4096
+			let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: initialSize)
+			let len = element_getTextContent(id, buffer, Int32(initialSize))
+
+			if len > 0 {
+				let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
+				buffer.deallocate()
+				return String(decoding: bytes, as: UTF8.self)
 			}
+			buffer.deallocate()
+
+			if len < 0 {
+				// Truncated — |len| is the needed buffer size. Retry with exact allocation.
+				let neededSize = Int(-len)
+				let largeBuffer = UnsafeMutablePointer<Int8>.allocate(capacity: neededSize)
+				let retryLen = element_getTextContent(id, largeBuffer, Int32(neededSize))
+				if retryLen > 0 {
+					let bytes = UnsafeBufferPointer(start: largeBuffer, count: Int(retryLen)).map { UInt8(bitPattern: $0) }
+					largeBuffer.deallocate()
+					return String(decoding: bytes, as: UTF8.self)
+				}
+				largeBuffer.deallocate()
+			}
+
+			return nil
 		}
 		nonmutating set {
 			guard let value = newValue else { return }
@@ -426,23 +478,42 @@ public struct Element: Sendable {
 	}
 
 	public func getAttribute(_ name: String) -> String? {
-		let bufferSize = 1024 * 4
-		let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-		defer { buffer.deallocate() }
-        
-        var nameBuffer = Array(name.utf8)
-        nameBuffer.append(0)
-        
-        return nameBuffer.withUnsafeBufferPointer { nameBufPtr in
-            nameBufPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: nameBuffer.count) { pointer in
-                let len = element_getAttribute(id, pointer, Int32(nameBuffer.count - 1), buffer, Int32(bufferSize))
-                if len > 0 {
-                    let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
-                    return String(decoding: bytes, as: UTF8.self)
-                }
-                return nil
-            }
-        }
+		var nameBuffer = Array(name.utf8)
+		nameBuffer.append(0)
+
+		return nameBuffer.withUnsafeBufferPointer { nameBufPtr in
+			nameBufPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: nameBuffer.count) { pointer in
+				let nameLen = Int32(nameBuffer.count - 1)
+
+				// First attempt with 4KB buffer (sufficient for most attributes)
+				let initialSize = 1024 * 4
+				let initialBuffer = UnsafeMutablePointer<Int8>.allocate(capacity: initialSize)
+				let len = element_getAttribute(id, pointer, nameLen, initialBuffer, Int32(initialSize))
+
+				if len > 0 {
+					// Fits in buffer
+					let bytes = UnsafeBufferPointer(start: initialBuffer, count: Int(len)).map { UInt8(bitPattern: $0) }
+					initialBuffer.deallocate()
+					return String(decoding: bytes, as: UTF8.self)
+				}
+				initialBuffer.deallocate()
+
+				if len < 0 {
+					// Truncated — |len| is the needed buffer size. Retry with exact allocation.
+					let neededSize = Int(-len)
+					let largeBuffer = UnsafeMutablePointer<Int8>.allocate(capacity: neededSize)
+					let retryLen = element_getAttribute(id, pointer, nameLen, largeBuffer, Int32(neededSize))
+					if retryLen > 0 {
+						let bytes = UnsafeBufferPointer(start: largeBuffer, count: Int(retryLen)).map { UInt8(bitPattern: $0) }
+						largeBuffer.deallocate()
+						return String(decoding: bytes, as: UTF8.self)
+					}
+					largeBuffer.deallocate()
+				}
+
+				return nil
+			}
+		}
 	}
 
 	public func getAttribute(_ name: HTMLAttributeName) -> String? {
@@ -458,7 +529,7 @@ public struct Element: Sendable {
 	}
 
 	public func scrollIntoView(_ options: ScrollIntoViewOptions) {
-		// For now, just call scrollIntoView - options handling would need JS impl
+		// For now, just call scrollIntoView - options handling would need JSProtocol impl
 		element_scrollIntoView(id)
 	}
 
@@ -481,7 +552,7 @@ public struct Element: Sendable {
 	}
 }
 
-extension Element: EventTarget {
+extension Element: EventTargetProtocol {
 	@discardableResult
 	public func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
 		let callbackId = CallbackRegistry.register(handler)
@@ -496,6 +567,26 @@ extension Element: EventTarget {
 	@discardableResult
 	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
 		return addEventListener(event.staticString, handler)
+	}
+
+	@discardableResult
+	public func addEventListener(_ event: StaticString, once: Bool, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
+		if once {
+			let callbackId = CallbackRegistry.register(handler)
+			event.withUTF8Buffer { buffer in
+				buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+					element_addEventListenerOnce(id, pointer, Int32(buffer.count), Int32(callbackId))
+				}
+			}
+			return self
+		} else {
+			return addEventListener(event, handler)
+		}
+	}
+
+	@discardableResult
+	public func addEventListener(_ event: Event.`Type`, once: Bool, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
+		return addEventListener(event.staticString, once: once, handler)
 	}
 
 	public func removeEventListener(_ event: StaticString) {
@@ -527,6 +618,9 @@ extension Element: EventTarget {
 @_extern(wasm, module: "env", name: "element_addEventListener")
 func element_addEventListener(_ elementId: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackId: Int32)
 
+@_extern(wasm, module: "env", name: "element_addEventListenerOnce")
+func element_addEventListenerOnce(_ elementId: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackId: Int32)
+
 @_extern(wasm, module: "env", name: "element_removeEventListener")
 func element_removeEventListener(_ elementId: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
 
@@ -539,6 +633,9 @@ func element_dispatchCustomEvent(_ elementId: Int32, _ eventPointer: Int32)
 @_extern(wasm, module: "env", name: "element_querySelector")
 func element_querySelector(_ elementId: Int32, _ selectorPointer: UnsafePointer<CChar>, _ selectorLen: Int32) -> Int32
 
+@_extern(wasm, module: "env", name: "element_getTagName")
+func element_getTagName(_ elementId: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+
 @_extern(wasm, module: "env", name: "element_getInnerHTML")
 func element_getInnerHTML(_ elementId: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
@@ -550,6 +647,9 @@ func element_getTextContent(_ elementId: Int32, _ buffer: UnsafeMutablePointer<I
 
 @_extern(wasm, module: "env", name: "element_setTextContent")
 func element_setTextContent(_ elementId: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
+
+@_extern(wasm, module: "env", name: "element_appendText")
+func element_appendText(_ elementId: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
 
 @_extern(wasm, module: "env", name: "element_setAttribute")
 func element_setAttribute(_ elementId: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
@@ -571,6 +671,9 @@ func element_toggleClass(_ elementId: Int32, _ classPointer: UnsafePointer<CChar
 
 @_extern(wasm, module: "env", name: "element_appendChild")
 func element_appendChild(_ parentId: Int32, _ childId: Int32)
+
+@_extern(wasm, module: "env", name: "element_insertBefore")
+func element_insertBefore(_ parentId: Int32, _ newChildId: Int32, _ referenceChildId: Int32)
 
 @_extern(wasm, module: "env", name: "element_contains")
 func element_contains(_ parentId: Int32, _ childId: Int32) -> Int32

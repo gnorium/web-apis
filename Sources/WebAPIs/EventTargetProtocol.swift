@@ -1,6 +1,6 @@
 #if os(WASI)
 
-public protocol EventTarget: Sendable {
+public protocol EventTargetProtocol: Sendable {
 	@discardableResult
 	func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Self
 	func removeEventListener(_ event: StaticString)

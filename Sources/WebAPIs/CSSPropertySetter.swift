@@ -3,7 +3,7 @@
 import EmbeddedSwiftUtilities
 import WebTypes
 
-// Generic property setter for all other CSS properties
+// Generic property setter for all other CSSProtocol properties
 @dynamicCallable
 public struct CSSPropertySetter: Sendable {
 	let elementId: Int32
@@ -68,10 +68,15 @@ public struct CSSPropertySetter: Sendable {
 		setPropertyValue(stringValue)
 	}
 
-	// Concrete overload for Length
+	// Concrete overload for Length (single or multiple values)
 	public func dynamicallyCall(withArguments args: [Length]) {
-		guard let value = args.first else { return }
-		setPropertyValue(value.value)
+		let stringValue: String
+		if args.count == 1 {
+			stringValue = args[0].value
+		} else {
+			stringValue = stringJoin(args.map { $0.value }, separator: " ")
+		}
+		setPropertyValue(stringValue)
 	}
 
 	// Concrete overload for Percentage
@@ -250,8 +255,8 @@ public struct CSSPropertySetter: Sendable {
 		// Not used - exists for potential future keyword arg support
 	}
 
-	// Generic fallback for other CSSPropertyValue types
-	public func dynamicallyCall<T: CSSPropertyValue>(withArguments args: [T]) {
+	// Generic fallback for other CSSPropertyValueProtocol types
+	public func dynamicallyCall<T: CSSPropertyValueProtocol>(withArguments args: [T]) {
 		guard let value = args.first else { return }
 		setPropertyStaticString(value.rawValue)
 	}

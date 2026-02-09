@@ -25,7 +25,7 @@ public struct CSSStyleDeclaration: Sendable {
         }
 	}
 
-	public func setProperty<T: CSSPropertyValue>(_ property: String, _ value: T) {
+	public func setProperty<T: CSSPropertyValueProtocol>(_ property: String, _ value: T) {
 		var propertyBuffer = Array(property.utf8)
 		propertyBuffer.append(0)
 
@@ -70,7 +70,7 @@ public struct CSSStyleDeclaration: Sendable {
 		}
 	}
 
-    public func setProperty<T: CSSPropertyValue>(_ property: StaticString, _ value: T) {
+    public func setProperty<T: CSSPropertyValueProtocol>(_ property: StaticString, _ value: T) {
         property.withUTF8Buffer { propertyBuffer in
             propertyBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propertyBuffer.count) { propertyPointer in
                 value.rawValue.withUTF8Buffer { valueBuffer in
@@ -215,6 +215,10 @@ public struct CSSStyleDeclaration: Sendable {
 
 	public var display: CSSDisplaySetter {
 		return CSSDisplaySetter(elementId: elementId)
+	}
+
+	public var textAlign: CSSTextAlignSetter {
+		return CSSTextAlignSetter(elementId: elementId)
 	}
 
 	public var overflow: CSSOverflowSetter {

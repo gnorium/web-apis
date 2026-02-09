@@ -2,7 +2,7 @@
 
 import WebTypes
 
-extension CSSColorScheme: DatasetValue {
+extension CSSColorScheme: DatasetValueProtocol {
 	public var rawValue: StaticString {
 		staticRawValue
 	}
