@@ -13,73 +13,28 @@ public struct DOMStringMap: Sendable {
 			return Element(id: elementId).getAttribute(attributeName)
 		}
 		set {
+			guard let value = newValue else { return }
 			let kebabCase = camelToKebab(key)
 			let attributeName = stringConcat("data-", kebabCase)
-			if let value = newValue {
-				Element(id: elementId).setAttribute(attributeName, value)
+			var nameBuffer = Array(attributeName.utf8)
+			nameBuffer.append(0)
+			var valueBuffer = Array(value.utf8)
+			valueBuffer.append(0)
+
+			nameBuffer.withUnsafeBufferPointer { namePtr in
+				namePtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: nameBuffer.count) { namePointer in
+					valueBuffer.withUnsafeBufferPointer { valPtr in
+						valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
+							element_setAttribute(elementId, namePointer, Int32(nameBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+						}
+					}
+				}
 			}
 		}
 	}
 
-	public subscript(dynamicMember key: String) -> String? {
-		get {
-			let kebabCase = camelToKebab(key)
-			// Build "data-" + attributeName in a C string buffer
-			let attrBuffer = Array(kebabCase.utf8)
-			let attrLen = attrBuffer.count
-			let totalLen = 5 + attrLen // "data-" is 5 chars
-
-			let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: Int(totalLen + 1))
-			defer { buffer.deallocate() }
-
-			// Copy "data-"
-			buffer[0] = 100 // 'd'
-			buffer[1] = 97  // 'a'
-			buffer[2] = 116 // 't'
-			buffer[3] = 97  // 'a'
-			buffer[4] = 45  // '-'
-
-			// Copy attribute name
-			for i in 0..<attrLen {
-				buffer[5 + i] = CChar(bitPattern: attrBuffer[i])
-			}
-			buffer[Int(totalLen)] = 0 // null terminator
-
-			return Element(id: elementId).getAttribute(String(cString: buffer))
-		}
-		set {
-			guard let value = newValue else { return }
-			let kebabCase = camelToKebab(key)
-
-			// Build "data-" + attributeName in a C string buffer
-			let attrBuffer = Array(kebabCase.utf8)
-			let attrLen = attrBuffer.count
-			let totalLen = 5 + attrLen // "data-" is 5 chars
-
-			let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: Int(totalLen + 1))
-			defer { buffer.deallocate() }
-
-			// Copy "data-"
-			buffer[0] = 100 // 'd'
-			buffer[1] = 97  // 'a'
-			buffer[2] = 116 // 't'
-			buffer[3] = 97  // 'a'
-			buffer[4] = 45  // '-'
-
-			// Copy attribute name
-			for i in 0..<attrLen {
-				buffer[5 + i] = CChar(bitPattern: attrBuffer[i])
-			}
-			buffer[Int(totalLen)] = 0 // null terminator
-
-			var valueBuffer = Array(value.utf8)
-			valueBuffer.append(0)
-			valueBuffer.withUnsafeBufferPointer { valPtr in
-				valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePtr in
-					element_setAttribute(elementId, buffer, Int32(totalLen), valuePtr, Int32(valueBuffer.count - 1))
-				}
-			}
-		}
+	public subscript(dynamicMember key: String) -> DatasetPropertySetter {
+		return DatasetPropertySetter(elementId: elementId, attribute: stringConcat("data-", camelToKebab(key)))
 	}
 
 	private func camelToKebab(_ str: String) -> String {
@@ -96,8 +51,8 @@ public struct DOMStringMap: Sendable {
 					result.append(char)
 				}
 			}
-		} 
-		
+		}
+
 		// Fallback if contiguous storage not available (rare for String)
 		if result.isEmpty {
 			for char in str.utf8 {
@@ -111,7 +66,7 @@ public struct DOMStringMap: Sendable {
 				}
 			}
 		}
-		
+
 		return String(decoding: result, as: UTF8.self)
 	}
 }
