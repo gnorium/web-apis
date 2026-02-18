@@ -702,6 +702,12 @@ func element_getAttribute(_ elementId: Int32, _ namePointer: UnsafePointer<CChar
 @_extern(wasm, module: "env", name: "element_setStyleProperty")
 func element_setStyleProperty(_ elementId: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
 
+@_extern(wasm, module: "env", name: "element_removeStyleProperty")
+func element_removeStyleProperty(_ elementId: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32)
+
+@_extern(wasm, module: "env", name: "element_getStyleProperty")
+func element_getStyleProperty(_ elementId: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+
 @_extern(wasm, module: "env", name: "element_cloneNode")
 func element_cloneNode(_ elementId: Int32, _ deep: Int32) -> Int32
 

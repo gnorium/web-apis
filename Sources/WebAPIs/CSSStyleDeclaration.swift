@@ -94,6 +94,43 @@ public struct CSSStyleDeclaration: Sendable {
         }
     }
 
+	public func removeProperty(_ property: String) {
+		var propertyBuffer = Array(property.utf8)
+		propertyBuffer.append(0)
+
+		propertyBuffer.withUnsafeBufferPointer { propPtr in
+			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propertyBuffer.count) { propertyPointer in
+				element_removeStyleProperty(elementId, propertyPointer, Int32(propertyBuffer.count - 1))
+			}
+		}
+	}
+
+	public func removeProperty(_ property: StaticString) {
+		property.withUTF8Buffer { propertyBuffer in
+			propertyBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propertyBuffer.count) { propertyPointer in
+				element_removeStyleProperty(elementId, propertyPointer, Int32(propertyBuffer.count))
+			}
+		}
+	}
+
+	public func getPropertyValue(_ property: String) -> String {
+		var propertyBuffer = Array(property.utf8)
+		propertyBuffer.append(0)
+
+		let bufferSize = 1024
+		var resultBuffer = [Int8](repeating: 0, count: bufferSize)
+		let length = resultBuffer.withUnsafeMutableBufferPointer { bufPtr in
+			propertyBuffer.withUnsafeBufferPointer { propPtr in
+				propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propertyBuffer.count) { propertyPointer in
+					element_getStyleProperty(elementId, propertyPointer, Int32(propertyBuffer.count - 1), bufPtr.baseAddress!, Int32(bufferSize))
+				}
+			}
+		}
+		guard length > 0 else { return "" }
+		let bytes = resultBuffer[0..<Int(length)].map { UInt8(bitPattern: $0) }
+		return String(decoding: bytes, as: UTF8.self)
+	}
+
     // MARK: - CSSPropertyName Overloads
 
     public func setProperty(_ property: CSSPropertyName, _ value: String) {

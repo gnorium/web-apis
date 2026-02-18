@@ -7,6 +7,7 @@ public struct DOMTokenList: Sendable {
 
 	private var element: Element { Element(id: elementId) }
 
+	@discardableResult
 	public func add(_ className: String) -> Element {
 		var buffer = Array(className.utf8)
 		buffer.append(0)
@@ -19,6 +20,7 @@ public struct DOMTokenList: Sendable {
 		return element
 	}
 
+	@discardableResult
 	public func remove(_ className: String) -> Element {
 		var buffer = Array(className.utf8)
 		buffer.append(0)
@@ -31,6 +33,7 @@ public struct DOMTokenList: Sendable {
 		return element
 	}
 
+	@discardableResult
 	public func toggle(_ className: String) -> Element {
 		var buffer = Array(className.utf8)
 		buffer.append(0)
