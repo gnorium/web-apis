@@ -41,6 +41,18 @@ public struct Window: Sendable {
 			return ""
 		}
 
+		public var search: String {
+			let bufferSize = 1024 * 4
+			let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+			defer { buffer.deallocate() }
+			let len = window_getLocationSearch(buffer, Int32(bufferSize))
+			if len > 0 {
+				let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
+				return String(decoding: bytes, as: UTF8.self)
+			}
+			return ""
+		}
+
 		public init() {}
 	}
 
@@ -119,6 +131,16 @@ public struct Window: Sendable {
 	///   - behavior: 0 for auto (default), 1 for smooth
 	public func scrollTo(_ x: Double, _ y: Double, behavior: ScrollBehavior = .auto) {
 		window_scrollTo(x, y, Int32(behavior.rawValue))
+	}
+
+	public func replaceURL(_ url: String) {
+		var buffer = Array(url.utf8)
+		buffer.append(0)
+		buffer.withUnsafeBufferPointer { ptr in
+			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+				history_replaceURL(pointer, Int32(buffer.count - 1))
+			}
+		}
 	}
 
 	public var location: Location {
@@ -357,8 +379,14 @@ func window_getLocationHref(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: I
 @_extern(wasm, module: "env", name: "getLocationPathname")
 func window_getLocationPathname(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
+@_extern(wasm, module: "env", name: "getLocationSearch")
+func window_getLocationSearch(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+
 @_extern(wasm, module: "env", name: "window_setLocationHref")
 func window_setLocationHref(_ hrefPointer: UnsafePointer<CChar>, _ hrefLen: Int32)
+
+@_extern(wasm, module: "env", name: "history_replaceURL")
+func history_replaceURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
 
 @_extern(wasm, module: "env", name: "window_performanceNow")
 func window_performanceNow() -> Double
