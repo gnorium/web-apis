@@ -273,6 +273,11 @@ public struct Element: Sendable {
 		return parentId >= 0 ? Element(id: parentId) : nil
 	}
 
+	public var firstElementChild: Element? {
+		let childId = element_firstElementChild(id)
+		return childId >= 0 ? Element(id: childId) : nil
+	}
+
 	public func click() {
 		element_click(id)
 	}
@@ -719,6 +724,9 @@ func element_remove(_ elementId: Int32)
 
 @_extern(wasm, module: "env", name: "element_parentElement")
 func element_parentElement(_ elementId: Int32) -> Int32
+
+@_extern(wasm, module: "env", name: "element_firstElementChild")
+func element_firstElementChild(_ elementId: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_click")
 func element_click(_ elementId: Int32)
