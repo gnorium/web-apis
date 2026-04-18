@@ -5,7 +5,7 @@ import WebTypes
 
 @dynamicCallable
 public struct CSSTextAlignSetter: Sendable {
-	let elementId: Int32
+	let elementID: Int32
 
 	public func dynamicallyCall(withArguments args: [CSSTextAlign]) {
 		guard let value = args.first else { return }
@@ -19,7 +19,7 @@ public struct CSSTextAlignSetter: Sendable {
 			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
 				valueBuffer.withUnsafeBufferPointer { valPtr in
 					valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-						element_setStyleProperty(elementId, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+						element_setStyleProperty(elementID, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
 					}
 				}
 			}

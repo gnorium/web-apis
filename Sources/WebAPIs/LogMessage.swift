@@ -7,7 +7,6 @@ public struct LogMessage: ExpressibleByStringInterpolation {
 	let runtimeMessage: String?
 
 	public struct StringInterpolation: StringInterpolationProtocol {
-		public typealias StringLiteralType = StaticString
 		var output: String = ""
 
 		public init(literalCapacity: Int, interpolationCount: Int) {

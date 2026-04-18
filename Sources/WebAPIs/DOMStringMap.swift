@@ -4,13 +4,13 @@ import EmbeddedSwiftUtilities
 
 @dynamicMemberLookup
 public struct DOMStringMap: Sendable {
-	let elementId: Int32
+	let elementID: Int32
 
 	public subscript(key: String) -> String? {
 		get {
 			let kebabCase = camelToKebab(key)
 			let attributeName = stringConcat("data-", kebabCase)
-			return Element(id: elementId).getAttribute(attributeName)
+			return Element(id: elementID).getAttribute(attributeName)
 		}
 		set {
 			guard let value = newValue else { return }
@@ -25,7 +25,7 @@ public struct DOMStringMap: Sendable {
 				namePtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: nameBuffer.count) { namePointer in
 					valueBuffer.withUnsafeBufferPointer { valPtr in
 						valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-							element_setAttribute(elementId, namePointer, Int32(nameBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+							element_setAttribute(elementID, namePointer, Int32(nameBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
 						}
 					}
 				}
@@ -34,7 +34,7 @@ public struct DOMStringMap: Sendable {
 	}
 
 	public subscript(dynamicMember key: String) -> DatasetPropertySetter {
-		return DatasetPropertySetter(elementId: elementId, attribute: stringConcat("data-", camelToKebab(key)))
+		return DatasetPropertySetter(elementID: elementID, attribute: stringConcat("data-", camelToKebab(key)))
 	}
 
 	private func camelToKebab(_ str: String) -> String {

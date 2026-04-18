@@ -3,10 +3,10 @@
 import EmbeddedSwiftUtilities
 import WebTypes
 
-// Generic property setter for all other CSSProtocol properties
+// Generic property setter for all other CSSContent properties
 @dynamicCallable
 public struct CSSPropertySetter: Sendable {
-	let elementId: Int32
+	let elementID: Int32
 	let property: String
 
 	// Helper to set property without triggering normalization
@@ -20,7 +20,7 @@ public struct CSSPropertySetter: Sendable {
 			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propertyBuffer.count) { propertyPointer in
 				valueBuffer.withUnsafeBufferPointer { valPtr in
 					valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-						element_setStyleProperty(elementId, propertyPointer, Int32(propertyBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+						element_setStyleProperty(elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
 					}
 				}
 			}
@@ -51,6 +51,12 @@ public struct CSSPropertySetter: Sendable {
 		setPropertyStaticString(value.rawValue)
 	}
 
+	// Concrete overload for CSSKeyword.None
+	public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
+		guard let value = args.first else { return }
+		setPropertyStaticString(value.staticRawValue)
+	}
+
 	// Concrete overload for String
 	public func dynamicallyCall(withArguments args: [String]) {
 		guard let value = args.first else { return }
@@ -64,6 +70,17 @@ public struct CSSPropertySetter: Sendable {
 			stringValue = intToString(args[0])
 		} else {
 			stringValue = stringJoin(args.map { intToString($0) }, separator: " ")
+		}
+		setPropertyValue(stringValue)
+	}
+
+	// Concrete overload for Int32 (single or multiple values)
+	public func dynamicallyCall(withArguments args: [Int32]) {
+		let stringValue: String
+		if args.count == 1 {
+			stringValue = intToString(Int(args[0]))
+		} else {
+			stringValue = stringJoin(args.map { intToString(Int($0)) }, separator: " ")
 		}
 		setPropertyValue(stringValue)
 	}
@@ -193,7 +210,11 @@ public struct CSSPropertySetter: Sendable {
 	// Concrete overload for CSSTextOverflow
 	public func dynamicallyCall(withArguments args: [CSSTextOverflow]) {
 		guard let value = args.first else { return }
-		setPropertyStaticString(value.staticRawValue)
+		if let staticStr = value.staticRawValue {
+			setPropertyStaticString(staticStr)
+		} else {
+			setPropertyValue(value.value)
+		}
 	}
 
 	// CSSPointerEvents removed - use CSSPointerEventsSetter instead
@@ -201,7 +222,7 @@ public struct CSSPropertySetter: Sendable {
 	// Concrete overload for CSSBoxSizing
 	public func dynamicallyCall(withArguments args: [CSSBoxSizing]) {
 		guard let value = args.first else { return }
-		setPropertyValue(value.rawValue)
+		setPropertyValue(value.value)
 	}
 
 	// Concrete overload for CSSUserSelect
@@ -255,8 +276,9 @@ public struct CSSPropertySetter: Sendable {
 		// Not used - exists for potential future keyword arg support
 	}
 
-	// Generic fallback for other CSSPropertyValueProtocol types
-	public func dynamicallyCall<T: CSSPropertyValueProtocol>(withArguments args: [T]) {
+
+	// Generic fallback for other CSSPropertyValue types
+	public func dynamicallyCall<T: CSSPropertyValue>(withArguments args: [T]) {
 		guard let value = args.first else { return }
 		setPropertyStaticString(value.rawValue)
 	}
@@ -269,7 +291,7 @@ public struct CSSPropertySetter: Sendable {
 			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propertyBuffer.count) { propertyPointer in
 				value.withUTF8Buffer { valueBuffer in
 					valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePtr in
-						element_setStyleProperty(elementId, propertyPointer, Int32(propertyBuffer.count - 1), valuePtr, Int32(valueBuffer.count))
+						element_setStyleProperty(elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePtr, Int32(valueBuffer.count))
 					}
 				}
 			}

@@ -5,7 +5,7 @@ import WebTypes
 
 @dynamicCallable
 public struct CSSColorSetter: Sendable {
-	let elementId: Int32
+	let elementID: Int32
 	let property: String
 
 	public func dynamicallyCall(withArguments args: [CSSColor]) {
@@ -20,7 +20,7 @@ public struct CSSColorSetter: Sendable {
 			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
 				valueBuffer.withUnsafeBufferPointer { valPtr in
 					valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-						element_setStyleProperty(elementId, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+						element_setStyleProperty(elementID, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
 					}
 				}
 			}
@@ -37,7 +37,7 @@ public struct CSSColorSetter: Sendable {
 			propBuffer.withUnsafeBufferPointer { propPtr in
 				propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
 					valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePtr in
-						element_setStyleProperty(elementId, propPointer, Int32(propBuffer.count - 1), valuePtr, Int32(valueBuffer.count))
+						element_setStyleProperty(elementID, propPointer, Int32(propBuffer.count - 1), valuePtr, Int32(valueBuffer.count))
 					}
 				}
 			}

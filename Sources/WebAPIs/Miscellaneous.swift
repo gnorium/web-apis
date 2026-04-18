@@ -1,18 +1,18 @@
 #if os(WASI)
 
 public func setTimeout(_ ms: Int, _ callback: @escaping @Sendable () -> Void) -> Int32 {
-	let callbackId = CallbackRegistry.register { _ in
+	let callbackID = CallbackRegistry.register { _ in
 		callback()
 	}
-	return timing_setTimeout(Int32(ms), Int32(callbackId))
+	return timing_setTimeout(Int32(ms), Int32(callbackID))
 }
 
-public func clearTimeout(_ timerId: Int32) {
-	timing_clearTimeout(timerId)
+public func clearTimeout(_ timerID: Int32) {
+	timing_clearTimeout(timerID)
 }
 
 /// Format an ISO 8601 date string to the user's local timezone and locale.
-/// Uses the browser's `Intl.DateTimeFormat` via JSProtocol bridge.
+/// Uses the browser's `Intl.DateTimeFormat` via JSContent bridge.
 /// Returns nil if the ISO string is invalid.
 public func formatLocalDate(_ isoString: String) -> String? {
 	var isoBuffer = Array(isoString.utf8)
@@ -35,10 +35,10 @@ public func formatLocalDate(_ isoString: String) -> String? {
 }
 
 @_extern(wasm, module: "env", name: "timing_setTimeout")
-fileprivate func timing_setTimeout(_ ms: Int32, _ callbackId: Int32) -> Int32
+fileprivate func timing_setTimeout(_ ms: Int32, _ callbackID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "timing_clearTimeout")
-fileprivate func timing_clearTimeout(_ timerId: Int32)
+fileprivate func timing_clearTimeout(_ timerID: Int32)
 
 @_extern(wasm, module: "env", name: "date_formatLocal")
 fileprivate func date_formatLocal(

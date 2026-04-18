@@ -50,8 +50,8 @@ public struct CallbackString: @unchecked Sendable {
 	}
 
 	public var target: Element? {
-		let targetId = event_target(ptr, Int32(len))
-		return targetId >= 0 ? Element(id: targetId) : nil
+		let targetID = event_target(ptr, Int32(len))
+		return targetID >= 0 ? Element(id: targetID) : nil
 	}
 
     public var detail: String {

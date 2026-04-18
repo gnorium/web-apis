@@ -3,9 +3,9 @@
 import EmbeddedSwiftUtilities
 
 public struct DOMTokenList: Sendable {
-	let elementId: Int32
+	let elementID: Int32
 
-	private var element: Element { Element(id: elementId) }
+	private var element: Element { Element(id: elementID) }
 
 	@discardableResult
 	public func add(_ className: String) -> Element {
@@ -14,7 +14,7 @@ public struct DOMTokenList: Sendable {
 
 		buffer.withUnsafeBufferPointer { ptr in
 			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				element_addClass(elementId, pointer, Int32(buffer.count - 1))
+				element_addClass(elementID, pointer, Int32(buffer.count - 1))
 			}
 		}
 		return element
@@ -27,7 +27,7 @@ public struct DOMTokenList: Sendable {
 
 		buffer.withUnsafeBufferPointer { ptr in
 			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				element_removeClass(elementId, pointer, Int32(buffer.count - 1))
+				element_removeClass(elementID, pointer, Int32(buffer.count - 1))
 			}
 		}
 		return element
@@ -40,7 +40,7 @@ public struct DOMTokenList: Sendable {
 
 		buffer.withUnsafeBufferPointer { ptr in
 			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				element_toggleClass(elementId, pointer, Int32(buffer.count - 1))
+				element_toggleClass(elementID, pointer, Int32(buffer.count - 1))
 			}
 		}
 		return element

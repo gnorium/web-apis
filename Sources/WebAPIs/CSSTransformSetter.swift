@@ -5,7 +5,7 @@ import WebTypes
 
 @dynamicCallable
 public struct CSSTransformSetter: Sendable {
-	let elementId: Int32
+	let elementID: Int32
 
 	private func setPropertyValue(_ value: String) {
 		var propBuffer = Array("transform".utf8)
@@ -17,7 +17,7 @@ public struct CSSTransformSetter: Sendable {
 			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propertyPointer in
 				valueBuffer.withUnsafeBufferPointer { valPtr in
 					valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-						element_setStyleProperty(elementId, propertyPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+						element_setStyleProperty(elementID, propertyPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
 					}
 				}
 			}
@@ -32,7 +32,7 @@ public struct CSSTransformSetter: Sendable {
 			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propertyPointer in
 				value.withUTF8Buffer { valueBuffer in
 					valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePtr in
-						element_setStyleProperty(elementId, propertyPointer, Int32(propBuffer.count - 1), valuePtr, Int32(valueBuffer.count))
+						element_setStyleProperty(elementID, propertyPointer, Int32(propBuffer.count - 1), valuePtr, Int32(valueBuffer.count))
 					}
 				}
 			}

@@ -14,7 +14,7 @@ public struct Console: Sendable {
 			let bytes: [UInt8] = Array(runtimeMsg.utf8)
 			let len = Int32(bytes.count)
 
-			// Write directly to WASM memory via JSProtocol
+			// Write directly to WASM memory via JSContent
 			bytes.withUnsafeBufferPointer { buffer in
 				buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
 					console_log(pointer, len)
@@ -36,7 +36,7 @@ public struct Console: Sendable {
 			let bytes: [UInt8] = Array(runtimeMsg.utf8)
 			let len = Int32(bytes.count)
 
-			// Write directly to WASM memory via JSProtocol
+			// Write directly to WASM memory via JSContent
 			bytes.withUnsafeBufferPointer { buffer in
 				buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
 					console_error(pointer, len)

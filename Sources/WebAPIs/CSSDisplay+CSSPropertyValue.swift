@@ -2,7 +2,7 @@
 
 import WebTypes
 
-extension CSSDisplay.Outside: CSSPropertyValueProtocol {
+extension CSSDisplay.Outside: CSSPropertyValue {
 	public var rawValue: StaticString {
 		switch self {
 			case .block: return "block"
@@ -11,7 +11,7 @@ extension CSSDisplay.Outside: CSSPropertyValueProtocol {
 	}
 }
 
-extension CSSDisplay.Box: CSSPropertyValueProtocol {
+extension CSSDisplay.Box: CSSPropertyValue {
 	public var rawValue: StaticString {
 		switch self {
 			case .contents: return "contents"
@@ -19,7 +19,7 @@ extension CSSDisplay.Box: CSSPropertyValueProtocol {
 	}
 }
 
-extension CSSDisplay.Inside: CSSPropertyValueProtocol {
+extension CSSDisplay.Inside: CSSPropertyValue {
 	public var rawValue: StaticString {
 		switch self {
 			case .flow: return "flow"
@@ -32,7 +32,7 @@ extension CSSDisplay.Inside: CSSPropertyValueProtocol {
 	}
 }
 
-extension CSSDisplay.ListItem: CSSPropertyValueProtocol {
+extension CSSDisplay.ListItem: CSSPropertyValue {
 	public var rawValue: StaticString {
 		switch self {
 			case .listItem: return "list-item"
@@ -40,7 +40,7 @@ extension CSSDisplay.ListItem: CSSPropertyValueProtocol {
 	}
 }
 
-extension CSSDisplay.Legacy: CSSPropertyValueProtocol {
+extension CSSDisplay.Legacy: CSSPropertyValue {
 	public var rawValue: StaticString {
 		switch self {
 			case .inlineBlock: return "inline-block"

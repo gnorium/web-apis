@@ -3,8 +3,12 @@
 import EmbeddedSwiftUtilities
 import WebTypes
 
-public struct Element: Sendable {
+public class Element: @unchecked Sendable {
 	public let id: Int32
+    
+    public init(id: Int32) {
+        self.id = id
+    }
 
 	public var idString: String? {
 		getAttribute("id")
@@ -52,7 +56,7 @@ public struct Element: Sendable {
         buffer.append(0)
         return buffer.withUnsafeBufferPointer { bufferPtr in
             bufferPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-                Element(id: document_createElement(pointer, Int32(buffer.count - 1)))
+                ElementFactory.create(id: document_createElement(pointer, Int32(buffer.count - 1)))
             }
         }
 	}
@@ -60,8 +64,8 @@ public struct Element: Sendable {
 	public func querySelector(_ selector: StaticString) -> Element? {
 		return selector.withUTF8Buffer { buffer in
 			buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				let newId = element_querySelector(id, pointer, Int32(buffer.count))
-				return newId >= 0 ? Element(id: newId) : nil
+				let newID = element_querySelector(id, pointer, Int32(buffer.count))
+				return newID >= 0 ? ElementFactory.create(id: newID) : nil
 			}
 		}
 	}
@@ -71,8 +75,8 @@ public struct Element: Sendable {
         buffer.append(0)
         return buffer.withUnsafeBufferPointer { bufferPtr in
             bufferPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-                let newId = element_querySelector(id, pointer, Int32(buffer.count - 1))
-                return newId >= 0 ? Element(id: newId) : nil
+                let newID = element_querySelector(id, pointer, Int32(buffer.count - 1))
+                return newID >= 0 ? ElementFactory.create(id: newID) : nil
             }
         }
 	}
@@ -86,7 +90,7 @@ public struct Element: Sendable {
                 let resultBuffer = UnsafeMutablePointer<Int32>.allocate(capacity: Int(maxElements))
                 defer { resultBuffer.deallocate() }
                 let count = element_querySelectorAll(id, pointer, Int32(buffer.count - 1), resultBuffer, maxElements)
-                return (0..<count).map { Element(id: resultBuffer[Int($0)]) }
+                return (0..<count).map { ElementFactory.create(id: resultBuffer[Int($0)]) }
             }
         }
 	}
@@ -103,7 +107,7 @@ public struct Element: Sendable {
 			}
 			return ""
 		}
-		nonmutating set {
+		set {
             var buffer = Array(newValue.utf8)
             buffer.append(0)
             buffer.withUnsafeBufferPointer { bufferPtr in
@@ -175,6 +179,14 @@ public struct Element: Sendable {
 		setAttribute(name.rawValue, intToString(value))
 	}
 
+	public func setAttribute(_ name: SVGAttributeName, _ value: String) {
+		setAttribute(name.rawValue, value)
+	}
+
+	public func setAttribute(_ name: SVGAttributeName, _ value: Bool) {
+		setAttribute(name.rawValue, value ? "true" : "false")
+	}
+
 	// Specific overloads with marker types for unambiguous value resolution
 	// .type accepts HTMLButton.Type (for <button>) or HTMLInput.Type (for <input>)
 	// Qualify at call site for semantic accuracy: HTMLButton.Type.button vs HTMLInput.Type.text
@@ -215,12 +227,12 @@ public struct Element: Sendable {
 
 	public var href: String {
 		get { "" }
-		nonmutating set { setProperty("href", newValue) }
+		set { setProperty("href", newValue) }
 	}
 
 	public var download: String {
 		get { "" }
-		nonmutating set { setProperty("download", newValue) }
+		set { setProperty("download", newValue) }
 	}
 
 	public func removeAttribute(_ name: String) {
@@ -231,6 +243,10 @@ public struct Element: Sendable {
                 element_removeAttribute(id, pointer, Int32(buffer.count - 1))
             }
         }
+	}
+
+	public func removeAttribute(_ name: HTMLAttributeName) {
+		removeAttribute(name.rawValue)
 	}
 
 	public func appendText(_ text: String) {
@@ -260,7 +276,7 @@ public struct Element: Sendable {
 	}
 
 	public func cloneNode(deep: Bool = true) -> Element {
-		return Element(id: element_cloneNode(id, deep ? 1 : 0))
+		return ElementFactory.create(id: element_cloneNode(id, deep ? 1 : 0))
 	}
 
 
@@ -269,13 +285,13 @@ public struct Element: Sendable {
 	}
 
 	public var parentElement: Element? {
-		let parentId = element_parentElement(id)
-		return parentId >= 0 ? Element(id: parentId) : nil
+		let parentID = element_parentElement(id)
+		return parentID >= 0 ? ElementFactory.create(id: parentID) : nil
 	}
 
 	public var firstElementChild: Element? {
-		let childId = element_firstElementChild(id)
-		return childId >= 0 ? Element(id: childId) : nil
+		let childID = element_firstElementChild(id)
+		return childID >= 0 ? ElementFactory.create(id: childID) : nil
 	}
 
 	public func click() {
@@ -290,12 +306,12 @@ public struct Element: Sendable {
 		element_blur(id)
 	}
 
-	/// Begins an SVGProtocol animation element (like <animate>)
+	/// Begins an SVGContent animation element (like <animate>)
 	public func beginElement() {
 		element_beginElement(id)
 	}
 
-	/// Ends an SVGProtocol animation element
+	/// Ends an SVGContent animation element
 	public func endElement() {
 		element_endElement(id)
 	}
@@ -305,85 +321,26 @@ public struct Element: Sendable {
         buffer.append(0)
         return buffer.withUnsafeBufferPointer { bufferPtr in
             bufferPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-                let newId = element_closest(id, pointer, Int32(buffer.count - 1))
-                return newId >= 0 ? Element(id: newId) : nil
+                let newID = element_closest(id, pointer, Int32(buffer.count - 1))
+                return newID >= 0 ? ElementFactory.create(id: newID) : nil
             }
         }
 	}
 
-	public var value: String {
-		get {
-			return getValue()
-		}
-		nonmutating set {
-			setValue(newValue)
-		}
-	}
 
-	public func getValue() -> String {
-		let bufferSize = 1024 * 4
-		let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-		defer { buffer.deallocate() }
-		let len = element_getValue(id, buffer, Int32(bufferSize))
-		if len > 0 {
-			let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
-			return String(decoding: bytes, as: UTF8.self)
-		}
-		return ""
-	}
-
-	public func setValue(_ value: String) {
-		var valueBuffer = Array(value.utf8)
-		valueBuffer.append(0)
-
-		valueBuffer.withUnsafeBufferPointer { ptr in
-			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { cCharPtr in
-				element_setValue(id, cCharPtr, Int32(valueBuffer.count - 1))
-			}
-		}
-	}
-
-	public var checked: Bool {
-		get {
-			return element_getChecked(id) != 0
-		}
-		nonmutating set {
-			element_setChecked(id, newValue ? 1 : 0)
-		}
-	}
-
-	public var disabled: Bool {
-		get {
-			return element_getDisabled(id) != 0
-		}
-		nonmutating set {
-			setDisabled(newValue)
-		}
-	}
-
-	public func setDisabled(_ disabled: Bool) {
-		element_setDisabled(id, disabled ? 1 : 0)
-	}
 
 	public var className: String {
 		get { getAttribute("class") ?? "" }
-		nonmutating set { setAttribute("class", newValue) }
+		set { setAttribute("class", newValue) }
 	}
 
-	public var classList: DOMTokenList { DOMTokenList(elementId: id) }
+	public var classList: DOMTokenList { DOMTokenList(elementID: id) }
 
-	public var dataset: DOMStringMap {
-		get { DOMStringMap(elementId: id) }
-		nonmutating set { /* Setter required for assignment syntax through optional chaining */ }
-	}
 
-	public var offsetWidth: Int32 {
-		element_getOffsetWidth(id)
-	}
 
 	public var scrollTop: Double {
 		get { element_getScrollTop(id) }
-		nonmutating set { element_setScrollTop(id, newValue) }
+		set { element_setScrollTop(id, newValue) }
 	}
 
 	public var scrollHeight: Double {
@@ -404,7 +361,7 @@ public struct Element: Sendable {
 
 	public var scrollLeft: Double {
 		get { element_getScrollLeft(id) }
-		nonmutating set { element_setScrollLeft(id, newValue) }
+		set { element_setScrollLeft(id, newValue) }
 	}
 
 	public var textContent: String? {
@@ -435,7 +392,7 @@ public struct Element: Sendable {
 
 			return nil
 		}
-		nonmutating set {
+		set {
 			guard let value = newValue else { return }
 			var valueBuffer = Array(value.utf8)
 			valueBuffer.append(0)
@@ -455,7 +412,7 @@ public struct Element: Sendable {
 			}
 			return false
 		}
-		nonmutating set { setAttribute("indeterminate", newValue ? "true" : "false") }
+		set { setAttribute("indeterminate", newValue ? "true" : "false") }
 	}
 
 	public func getBoundingClientRect() -> DOMRect? {
@@ -479,8 +436,15 @@ public struct Element: Sendable {
 	}
 
 	public var style: CSSStyleDeclaration {
-		CSSStyleDeclaration(elementId: id)
+		CSSStyleDeclaration(elementID: id)
 	}
+
+	public var dataset: DOMStringMap {
+		get { DOMStringMap(elementID: id) }
+		set { /* Setter required for assignment syntax through optional chaining */ }
+	}
+
+
 
 	public func getAttribute(_ name: String) -> String? {
 		var nameBuffer = Array(name.utf8)
@@ -534,7 +498,7 @@ public struct Element: Sendable {
 	}
 
 	public func scrollIntoView(_ options: ScrollIntoViewOptions) {
-		// For now, just call scrollIntoView - options handling would need JSProtocol impl
+		// For now, just call scrollIntoView - options handling would need JSContent impl
 		element_scrollIntoView(id)
 	}
 
@@ -543,7 +507,7 @@ public struct Element: Sendable {
 	}
 
 	public func fetch(_ url: String, _ callback: @escaping @Sendable (CallbackString?) -> Void) {
-		let callbackId = CallbackRegistry.register { response in
+		let callbackID = CallbackRegistry.register { response in
 			callback(response.isEmpty ? nil : response)
 		}
 		var urlBuffer = Array(url.utf8)
@@ -551,36 +515,36 @@ public struct Element: Sendable {
 
 		urlBuffer.withUnsafeBufferPointer { ptr in
 			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { cCharPointer in
-				element_fetch(id, cCharPointer, Int32(urlBuffer.count - 1), Int32(callbackId))
+				element_fetch(id, cCharPointer, Int32(urlBuffer.count - 1), Int32(callbackID))
 			}
 		}
 	}
 }
 
-extension Element: EventTargetProtocol {
+extension Element: EventTargeting {
 	@discardableResult
-	public func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
-		let callbackId = CallbackRegistry.register(handler)
+	public func addEventListener(_ event: StaticString, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Self {
+		let callbackID = CallbackRegistry.register(handler)
 		event.withUTF8Buffer { buffer in
 			buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				element_addEventListener(id, pointer, Int32(buffer.count), Int32(callbackId))
+				element_addEventListener(id, pointer, Int32(buffer.count), Int32(callbackID))
 			}
 		}
 		return self
 	}
 
 	@discardableResult
-	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
+	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Self {
 		return addEventListener(event.staticString, handler)
 	}
 
 	@discardableResult
-	public func addEventListener(_ event: StaticString, once: Bool, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
+	public func addEventListener(_ event: StaticString, once: Bool, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Self {
 		if once {
-			let callbackId = CallbackRegistry.register(handler)
+			let callbackID = CallbackRegistry.register(handler)
 			event.withUTF8Buffer { buffer in
 				buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-					element_addEventListenerOnce(id, pointer, Int32(buffer.count), Int32(callbackId))
+					element_addEventListenerOnce(id, pointer, Int32(buffer.count), Int32(callbackID))
 				}
 			}
 			return self
@@ -590,7 +554,7 @@ extension Element: EventTargetProtocol {
 	}
 
 	@discardableResult
-	public func addEventListener(_ event: Event.`Type`, once: Bool, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Element {
+	public func addEventListener(_ event: Event.`Type`, once: Bool, _ handler: @escaping @Sendable (CallbackString) -> Void) -> Self {
 		return addEventListener(event.staticString, once: once, handler)
 	}
 
@@ -621,174 +585,174 @@ extension Element: EventTargetProtocol {
 }
 
 @_extern(wasm, module: "env", name: "element_addEventListener")
-func element_addEventListener(_ elementId: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackId: Int32)
+func element_addEventListener(_ elementID: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
 
 @_extern(wasm, module: "env", name: "element_addEventListenerOnce")
-func element_addEventListenerOnce(_ elementId: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackId: Int32)
+func element_addEventListenerOnce(_ elementID: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
 
 @_extern(wasm, module: "env", name: "element_removeEventListener")
-func element_removeEventListener(_ elementId: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
+func element_removeEventListener(_ elementID: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_dispatchEvent")
-func element_dispatchEvent(_ elementId: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
+func element_dispatchEvent(_ elementID: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_dispatchCustomEvent")
-func element_dispatchCustomEvent(_ elementId: Int32, _ eventPointer: Int32)
+func element_dispatchCustomEvent(_ elementID: Int32, _ eventPointer: Int32)
 
 @_extern(wasm, module: "env", name: "element_querySelector")
-func element_querySelector(_ elementId: Int32, _ selectorPointer: UnsafePointer<CChar>, _ selectorLen: Int32) -> Int32
+func element_querySelector(_ elementID: Int32, _ selectorPointer: UnsafePointer<CChar>, _ selectorLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_getTagName")
-func element_getTagName(_ elementId: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+func element_getTagName(_ elementID: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_getInnerHTML")
-func element_getInnerHTML(_ elementId: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+func element_getInnerHTML(_ elementID: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_setInnerHTML")
-func element_setInnerHTML(_ elementId: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
+func element_setInnerHTML(_ elementID: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
 
 @_extern(wasm, module: "env", name: "element_getTextContent")
-func element_getTextContent(_ elementId: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+func element_getTextContent(_ elementID: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_setTextContent")
-func element_setTextContent(_ elementId: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
+func element_setTextContent(_ elementID: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
 
 @_extern(wasm, module: "env", name: "element_appendText")
-func element_appendText(_ elementId: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
+func element_appendText(_ elementID: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
 
 @_extern(wasm, module: "env", name: "element_setAttribute")
-func element_setAttribute(_ elementId: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
+func element_setAttribute(_ elementID: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_setProperty")
-func element_setProperty(_ elementId: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
+func element_setProperty(_ elementID: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_removeAttribute")
-func element_removeAttribute(_ elementId: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32)
+func element_removeAttribute(_ elementID: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_addClass")
-func element_addClass(_ elementId: Int32, _ classPointer: UnsafePointer<CChar>, _ classLen: Int32)
+func element_addClass(_ elementID: Int32, _ classPointer: UnsafePointer<CChar>, _ classLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_removeClass")
-func element_removeClass(_ elementId: Int32, _ classPointer: UnsafePointer<CChar>, _ classLen: Int32)
+func element_removeClass(_ elementID: Int32, _ classPointer: UnsafePointer<CChar>, _ classLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_toggleClass")
-func element_toggleClass(_ elementId: Int32, _ classPointer: UnsafePointer<CChar>, _ classLen: Int32)
+func element_toggleClass(_ elementID: Int32, _ classPointer: UnsafePointer<CChar>, _ classLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_appendChild")
-func element_appendChild(_ parentId: Int32, _ childId: Int32)
+func element_appendChild(_ parentID: Int32, _ childID: Int32)
 
 @_extern(wasm, module: "env", name: "element_insertBefore")
-func element_insertBefore(_ parentId: Int32, _ newChildId: Int32, _ referenceChildId: Int32)
+func element_insertBefore(_ parentID: Int32, _ newChildID: Int32, _ referenceChildID: Int32)
 
 @_extern(wasm, module: "env", name: "element_contains")
-func element_contains(_ parentId: Int32, _ childId: Int32) -> Int32
+func element_contains(_ parentID: Int32, _ childID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_getValue")
-func element_getValue(_ elementId: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+func element_getValue(_ elementID: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_setValue")
-func element_setValue(_ elementId: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
+func element_setValue(_ elementID: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_getChecked")
-func element_getChecked(_ elementId: Int32) -> Int32
+func element_getChecked(_ elementID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_setChecked")
-func element_setChecked(_ elementId: Int32, _ checked: Int32)
+func element_setChecked(_ elementID: Int32, _ checked: Int32)
 
 @_extern(wasm, module: "env", name: "element_getDisabled")
-func element_getDisabled(_ elementId: Int32) -> Int32
+func element_getDisabled(_ elementID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_setDisabled")
-func element_setDisabled(_ elementId: Int32, _ disabled: Int32)
+func element_setDisabled(_ elementID: Int32, _ disabled: Int32)
 
 @_extern(wasm, module: "env", name: "element_getAttribute")
-func element_getAttribute(_ elementId: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+func element_getAttribute(_ elementID: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_setStyleProperty")
-func element_setStyleProperty(_ elementId: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
+func element_setStyleProperty(_ elementID: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32, _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_removeStyleProperty")
-func element_removeStyleProperty(_ elementId: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32)
+func element_removeStyleProperty(_ elementID: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32)
 
 @_extern(wasm, module: "env", name: "element_getStyleProperty")
-func element_getStyleProperty(_ elementId: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+func element_getStyleProperty(_ elementID: Int32, _ propertyPointer: UnsafePointer<CChar>, _ propertyLen: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_cloneNode")
-func element_cloneNode(_ elementId: Int32, _ deep: Int32) -> Int32
+func element_cloneNode(_ elementID: Int32, _ deep: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_querySelectorAll")
-func element_querySelectorAll(_ elementId: Int32, _ selectorPointer: UnsafePointer<CChar>, _ selectorLen: Int32, _ buffer: UnsafeMutablePointer<Int32>, _ maxElements: Int32) -> Int32
+func element_querySelectorAll(_ elementID: Int32, _ selectorPointer: UnsafePointer<CChar>, _ selectorLen: Int32, _ buffer: UnsafeMutablePointer<Int32>, _ maxElements: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_remove")
-func element_remove(_ elementId: Int32)
+func element_remove(_ elementID: Int32)
 
 @_extern(wasm, module: "env", name: "element_parentElement")
-func element_parentElement(_ elementId: Int32) -> Int32
+func element_parentElement(_ elementID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_firstElementChild")
-func element_firstElementChild(_ elementId: Int32) -> Int32
+func element_firstElementChild(_ elementID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_click")
-func element_click(_ elementId: Int32)
+func element_click(_ elementID: Int32)
 
 @_extern(wasm, module: "env", name: "element_focus")
-func element_focus(_ elementId: Int32)
+func element_focus(_ elementID: Int32)
 
 @_extern(wasm, module: "env", name: "element_blur")
-func element_blur(_ elementId: Int32)
+func element_blur(_ elementID: Int32)
 
 @_extern(wasm, module: "env", name: "element_closest")
-func element_closest(_ elementId: Int32, _ selectorPointer: UnsafePointer<CChar>, _ selectorLen: Int32) -> Int32
+func element_closest(_ elementID: Int32, _ selectorPointer: UnsafePointer<CChar>, _ selectorLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_getOffsetWidth")
-func element_getOffsetWidth(_ elementId: Int32) -> Int32
+func element_getOffsetWidth(_ elementID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_getScrollWidth")
-func element_getScrollWidth(_ elementId: Int32) -> Int32
+func element_getScrollWidth(_ elementID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "element_getScrollTop")
-func element_getScrollTop(_ elementId: Int32) -> Double
+func element_getScrollTop(_ elementID: Int32) -> Double
 
 @_extern(wasm, module: "env", name: "element_setScrollTop")
-func element_setScrollTop(_ elementId: Int32, _ value: Double)
+func element_setScrollTop(_ elementID: Int32, _ value: Double)
 
 @_extern(wasm, module: "env", name: "element_getScrollHeight")
-func element_getScrollHeight(_ elementId: Int32) -> Double
+func element_getScrollHeight(_ elementID: Int32) -> Double
 
 @_extern(wasm, module: "env", name: "element_getClientHeight")
-func element_getClientHeight(_ elementId: Int32) -> Double
+func element_getClientHeight(_ elementID: Int32) -> Double
 
 @_extern(wasm, module: "env", name: "element_getClientWidth")
-func element_getClientWidth(_ elementId: Int32) -> Double
+func element_getClientWidth(_ elementID: Int32) -> Double
 
 @_extern(wasm, module: "env", name: "element_getScrollWidth")
-func element_getScrollWidth(_ elementId: Int32) -> Double
+func element_getScrollWidth(_ elementID: Int32) -> Double
 
 @_extern(wasm, module: "env", name: "element_getScrollLeft")
-func element_getScrollLeft(_ elementId: Int32) -> Double
+func element_getScrollLeft(_ elementID: Int32) -> Double
 
 @_extern(wasm, module: "env", name: "element_setScrollLeft")
-func element_setScrollLeft(_ elementId: Int32, _ value: Double)
+func element_setScrollLeft(_ elementID: Int32, _ value: Double)
 
 @_extern(wasm, module: "env", name: "element_scrollBy")
-func element_scrollBy(_ elementId: Int32, _ x: Double, _ y: Double)
+func element_scrollBy(_ elementID: Int32, _ x: Double, _ y: Double)
 
 @_extern(wasm, module: "env", name: "element_getBoundingClientRect")
-func element_getBoundingClientRect(_ elementId: Int32, _ xPointer: UnsafeMutablePointer<Double>, _ yPointer: UnsafeMutablePointer<Double>, _ widthPointer: UnsafeMutablePointer<Double>, _ heightPointer: UnsafeMutablePointer<Double>, _ topPointer: UnsafeMutablePointer<Double>, _ rightPointer: UnsafeMutablePointer<Double>, _ bottomPointer: UnsafeMutablePointer<Double>, _ leftPointer: UnsafeMutablePointer<Double>) -> Bool
+func element_getBoundingClientRect(_ elementID: Int32, _ xPointer: UnsafeMutablePointer<Double>, _ yPointer: UnsafeMutablePointer<Double>, _ widthPointer: UnsafeMutablePointer<Double>, _ heightPointer: UnsafeMutablePointer<Double>, _ topPointer: UnsafeMutablePointer<Double>, _ rightPointer: UnsafeMutablePointer<Double>, _ bottomPointer: UnsafeMutablePointer<Double>, _ leftPointer: UnsafeMutablePointer<Double>) -> Bool
 
 @_extern(wasm, module: "env", name: "element_getBBox")
-func element_getBBox(_ elementId: Int32, _ widthPointer: UnsafeMutablePointer<Double>, _ heightPointer: UnsafeMutablePointer<Double>) -> Bool
+func element_getBBox(_ elementID: Int32, _ widthPointer: UnsafeMutablePointer<Double>, _ heightPointer: UnsafeMutablePointer<Double>) -> Bool
 
 @_extern(wasm, module: "env", name: "element_fetch")
-func element_fetch(_ elementId: Int32, _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ callbackId: Int32)
+func element_fetch(_ elementID: Int32, _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ callbackID: Int32)
 
 @_extern(wasm, module: "env", name: "element_scrollIntoView")
-func element_scrollIntoView(_ elementId: Int32)
+func element_scrollIntoView(_ elementID: Int32)
 
 @_extern(wasm, module: "env", name: "element_beginElement")
-func element_beginElement(_ elementId: Int32)
+func element_beginElement(_ elementID: Int32)
 
 @_extern(wasm, module: "env", name: "element_endElement")
-func element_endElement(_ elementId: Int32)
+func element_endElement(_ elementID: Int32)
 
 #endif

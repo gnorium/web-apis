@@ -18,6 +18,6 @@ public struct QRCode {
 }
 
 @_extern(wasm, module: "env", name: "qrcode_init")
-fileprivate func qrcode_init(_ elementId: Int32, _ textPointer: UnsafePointer<CChar>, _ textLen: Int32, _ width: Int32, _ height: Int32)
+fileprivate func qrcode_init(_ elementID: Int32, _ textPointer: UnsafePointer<CChar>, _ textLen: Int32, _ width: Int32, _ height: Int32)
 
 #endif

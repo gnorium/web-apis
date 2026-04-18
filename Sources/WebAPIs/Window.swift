@@ -68,11 +68,11 @@ public struct Window: Sendable {
 	}
 
 	public func onMediaQueryChange(_ query: MediaQueryList, _ handler: @escaping @Sendable (Bool) -> Void) {
-		let callbackId = CallbackRegistry.register { matches in
+		let callbackID = CallbackRegistry.register { matches in
 			handler(matches.equals("true"))
 		}
 		query.withCString { pointer, len in
-			window_matchMediaAddListener(pointer, len, Int32(callbackId))
+			window_matchMediaAddListener(pointer, len, Int32(callbackID))
 		}
 	}
 
@@ -85,13 +85,13 @@ public struct Window: Sendable {
 	}
 
 	public func addEventListener(_ eventName: String, _ handler: @escaping @Sendable (CallbackString) -> Void) {
-		let callbackId = CallbackRegistry.register(handler)
+		let callbackID = CallbackRegistry.register(handler)
 		var buffer = Array(eventName.utf8)
 		buffer.append(0)
 
 		buffer.withUnsafeBufferPointer { ptr in
 			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				window_addEventListener(pointer, Int32(buffer.count - 1), Int32(callbackId))
+				window_addEventListener(pointer, Int32(buffer.count - 1), Int32(callbackID))
 			}
 		}
 	}
@@ -102,10 +102,10 @@ public struct Window: Sendable {
 
 	@discardableResult
 	public func requestAnimationFrame(_ callback: @escaping @Sendable () -> Void) -> Int32 {
-		let callbackId = CallbackRegistry.register { _ in
+		let callbackID = CallbackRegistry.register { _ in
 			callback()
 		}
-		return window_requestAnimationFrame(Int32(callbackId))
+		return window_requestAnimationFrame(Int32(callbackID))
 	}
 
 	public func cancelAnimationFrame(_ id: Int32) {
@@ -114,14 +114,14 @@ public struct Window: Sendable {
 
 	@discardableResult
 	public func setTimeout(_ ms: Double, _ callback: @escaping @Sendable () -> Void) -> Int32 {
-		let callbackId = CallbackRegistry.register { _ in
+		let callbackID = CallbackRegistry.register { _ in
 			callback()
 		}
-		return window_setTimeout(ms, Int32(callbackId))
+		return window_setTimeout(ms, Int32(callbackID))
 	}
 
-	public func clearTimeout(_ timerId: Int32) {
-		window_clearTimeout(timerId)
+	public func clearTimeout(_ timerID: Int32) {
+		window_clearTimeout(timerID)
 	}
 
 	/// Standard scrollTo API - scrolls to specified coordinates
@@ -148,11 +148,11 @@ public struct Window: Sendable {
 	}
 
 	public struct URL {
-		public static func createObjectURL(_ blobId: Int32) -> String {
+		public static func createObjectURL(_ blobID: Int32) -> String {
 			let bufferSize = 1024
 			let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
 			defer { buffer.deallocate() }
-			let len = window_createObjectURL(blobId, buffer, Int32(bufferSize))
+			let len = window_createObjectURL(blobID, buffer, Int32(bufferSize))
 			if len > 0 {
 				let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
 				return String(decoding: bytes, as: UTF8.self)
@@ -222,7 +222,7 @@ public struct Window: Sendable {
 	}
 
 	public func fetch(_ url: String, method: String = "GET", body: String? = nil, _ callback: @escaping @Sendable (FetchResponse) -> Void) {
-		let callbackId = CallbackRegistry.register { result in
+		let callbackID = CallbackRegistry.register { result in
 			callback(FetchResponse(jsonString: result.toString()))
 		}
 
@@ -240,11 +240,11 @@ public struct Window: Sendable {
 							bodyBuffer.append(0)
 							bodyBuffer.withUnsafeBufferPointer { bodyPtr in
 								bodyPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bodyBuffer.count) { bodyPointer in
-									window_fetch(urlPointer, Int32(urlBuffer.count - 1), methodPointer, Int32(methodBuffer.count - 1), bodyPointer, Int32(bodyBuffer.count - 1), Int32(callbackId))
+									window_fetch(urlPointer, Int32(urlBuffer.count - 1), methodPointer, Int32(methodBuffer.count - 1), bodyPointer, Int32(bodyBuffer.count - 1), Int32(callbackID))
 								}
 							}
 						} else {
-							window_fetch(urlPointer, Int32(urlBuffer.count - 1), methodPointer, Int32(methodBuffer.count - 1), nil, 0, Int32(callbackId))
+							window_fetch(urlPointer, Int32(urlBuffer.count - 1), methodPointer, Int32(methodBuffer.count - 1), nil, 0, Int32(callbackID))
 						}
 					}
 				}
@@ -265,7 +265,7 @@ public struct FetchResponse: Sendable {
 
 /// A wrapper for EventSource (Server-Sent Events)
 public final class EventSource: @unchecked Sendable {
-	private let sseId: Int32
+	private let sseID: Int32
 	private var isClosed = false
 
 	/// Create an EventSource connection to the given URL
@@ -282,30 +282,30 @@ public final class EventSource: @unchecked Sendable {
 		onDone: @escaping @Sendable (String) -> Void,
 		onError: @escaping @Sendable (String) -> Void
 	) {
-		let startCallbackId = CallbackRegistry.register { data in
+		let startCallbackID = CallbackRegistry.register { data in
 			onStart(data.toString())
 		}
-		let chunkCallbackId = CallbackRegistry.register { data in
+		let chunkCallbackID = CallbackRegistry.register { data in
 			onChunk(data.toString())
 		}
-		let doneCallbackId = CallbackRegistry.register { data in
+		let doneCallbackID = CallbackRegistry.register { data in
 			onDone(data.toString())
 		}
-		let errorCallbackId = CallbackRegistry.register { data in
+		let errorCallbackID = CallbackRegistry.register { data in
 			onError(data.toString())
 		}
 
 		var urlBuffer = Array(url.utf8)
 		urlBuffer.append(0)
 
-		self.sseId = urlBuffer.withUnsafeBufferPointer { ptr in
+		self.sseID = urlBuffer.withUnsafeBufferPointer { ptr in
 			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { pointer in
 				sse_create(
 					pointer, Int32(urlBuffer.count - 1),
-					Int32(startCallbackId),
-					Int32(chunkCallbackId),
-					Int32(doneCallbackId),
-					Int32(errorCallbackId)
+					Int32(startCallbackID),
+					Int32(chunkCallbackID),
+					Int32(doneCallbackID),
+					Int32(errorCallbackID)
 				)
 			}
 		}
@@ -315,7 +315,7 @@ public final class EventSource: @unchecked Sendable {
 	public func close() {
 		guard !isClosed else { return }
 		isClosed = true
-		sse_close(sseId)
+		sse_close(sseID)
 	}
 
 	deinit {
@@ -326,14 +326,14 @@ public final class EventSource: @unchecked Sendable {
 @_extern(wasm, module: "env", name: "sse_create")
 func sse_create(
 	_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32,
-	_ startCallbackId: Int32,
-	_ chunkCallbackId: Int32,
-	_ doneCallbackId: Int32,
-	_ errorCallbackId: Int32
+	_ startCallbackID: Int32,
+	_ chunkCallbackID: Int32,
+	_ doneCallbackID: Int32,
+	_ errorCallbackID: Int32
 ) -> Int32
 
 @_extern(wasm, module: "env", name: "sse_close")
-func sse_close(_ sseId: Int32)
+func sse_close(_ sseID: Int32)
 
 public let window = Window()
 
@@ -344,31 +344,31 @@ func window_alert(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32)
 func window_confirm(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "window_fetch")
-func window_fetch(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ methodPointer: UnsafePointer<CChar>, _ methodLen: Int32, _ bodyPointer: UnsafePointer<CChar>?, _ bodyLen: Int32, _ callbackId: Int32)
+func window_fetch(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ methodPointer: UnsafePointer<CChar>, _ methodLen: Int32, _ bodyPointer: UnsafePointer<CChar>?, _ bodyLen: Int32, _ callbackID: Int32)
 
 @_extern(wasm, module: "env", name: "window_matchMedia")
 func window_matchMedia(_ queryPointer: UnsafePointer<CChar>, _ queryLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "window_matchMediaAddListener")
-func window_matchMediaAddListener(_ queryPointer: UnsafePointer<CChar>, _ queryLen: Int32, _ callbackId: Int32)
+func window_matchMediaAddListener(_ queryPointer: UnsafePointer<CChar>, _ queryLen: Int32, _ callbackID: Int32)
 
 @_extern(wasm, module: "env", name: "window_dispatchEvent")
-func window_dispatchEvent(_ elementId: Int32)
+func window_dispatchEvent(_ elementID: Int32)
 
 @_extern(wasm, module: "env", name: "window_addEventListener")
-func window_addEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackId: Int32)
+func window_addEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
 
 @_extern(wasm, module: "env", name: "window_requestAnimationFrame")
-func window_requestAnimationFrame(_ callbackId: Int32) -> Int32
+func window_requestAnimationFrame(_ callbackID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "window_cancelAnimationFrame")
 func window_cancelAnimationFrame(_ id: Int32)
 
 @_extern(wasm, module: "env", name: "window_setTimeout")
-func window_setTimeout(_ ms: Double, _ callbackId: Int32) -> Int32
+func window_setTimeout(_ ms: Double, _ callbackID: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "window_clearTimeout")
-func window_clearTimeout(_ timerId: Int32)
+func window_clearTimeout(_ timerID: Int32)
 
 @_extern(wasm, module: "env", name: "window_scrollTo")
 func window_scrollTo(_ x: Double, _ y: Double, _ behavior: Int32)
@@ -396,7 +396,7 @@ public func getPerformanceNow() -> Double {
 }
 
 @_extern(wasm, module: "env", name: "window_createObjectURL")
-func window_createObjectURL(_ blobId: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+func window_createObjectURL(_ blobID: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
 @_extern(wasm, module: "env", name: "window_revokeObjectURL")
 func window_revokeObjectURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
@@ -405,6 +405,6 @@ func window_revokeObjectURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
 func navigator_clipboard_writeText(_ textPointer: UnsafePointer<CChar>, _ textLen: Int32)
 
 @_extern(wasm, module: "env", name: "canvas_toBlob")
-public func canvas_toBlob(_ canvasId: Int32, _ callbackId: Int32)
+public func canvas_toBlob(_ canvasID: Int32, _ callbackID: Int32)
 
 #endif

@@ -3,13 +3,13 @@
 public class CallbackRegistry: @unchecked Sendable {
 	private static let shared = CallbackRegistry()
 	private var closures: [Int: @Sendable (CallbackString) -> Void] = [:]
-	private var nextId = 0
+	private var nextID = 0
 
 	private init() {}
 
 	public static func register(_ closure: @escaping @Sendable (CallbackString) -> Void) -> Int {
-		let id = shared.nextId
-		shared.nextId += 1
+		let id = shared.nextID
+		shared.nextID += 1
 		shared.closures[id] = closure
 		return id
 	}

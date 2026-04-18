@@ -1,6 +1,6 @@
 #if os(WASI)
 
-public protocol CSSPropertyValueProtocol {
+public protocol DatasetValue {
 	var rawValue: StaticString { get }
 }
 

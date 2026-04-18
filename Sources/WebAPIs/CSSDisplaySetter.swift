@@ -5,14 +5,14 @@ import WebTypes
 
 @dynamicCallable
 public struct CSSDisplaySetter: Sendable {
-	let elementId: Int32
+	let elementID: Int32
 
 	// Helper to set display value from StaticString
-	private func setDisplay(_ staticValue: StaticString) {
+	private func setDisplay(_ staticRawValue: StaticString) {
 		var propBuffer = Array("display".utf8)
 		propBuffer.append(0)
 
-		staticValue.withUTF8Buffer { utf8Buffer in
+		staticRawValue.withUTF8Buffer { utf8Buffer in
 			var valueBuffer = Array(utf8Buffer)
 			valueBuffer.append(0)
 
@@ -20,7 +20,7 @@ public struct CSSDisplaySetter: Sendable {
 				propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
 					valueBuffer.withUnsafeBufferPointer { valPtr in
 						valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-							element_setStyleProperty(elementId, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
+							element_setStyleProperty(elementID, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
 						}
 					}
 				}
