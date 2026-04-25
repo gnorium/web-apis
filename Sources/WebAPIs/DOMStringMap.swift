@@ -1,74 +1,85 @@
-#if os(WASI)
+#if CLIENT
+  import DOMBuilder
+  import EmbeddedSwiftUtilities
 
-import EmbeddedSwiftUtilities
+  @dynamicMemberLookup
+  public final class DOMStringMap: @unchecked Sendable {
+    let elementID: Int32
 
-@dynamicMemberLookup
-public struct DOMStringMap: Sendable {
-	let elementID: Int32
+    public init(elementID: Int32) {
+      self.elementID = elementID
+    }
 
-	public subscript(key: String) -> String? {
-		get {
-			let kebabCase = camelToKebab(key)
-			let attributeName = stringConcat("data-", kebabCase)
-			return Element(id: elementID).getAttribute(attributeName)
-		}
-		set {
-			guard let value = newValue else { return }
-			let kebabCase = camelToKebab(key)
-			let attributeName = stringConcat("data-", kebabCase)
-			var nameBuffer = Array(attributeName.utf8)
-			nameBuffer.append(0)
-			var valueBuffer = Array(value.utf8)
-			valueBuffer.append(0)
+    public subscript(key: String) -> String? {
+      get {
+        let kebabCase = camelToKebab(key)
+        let attributeName = "data-\(kebabCase)"
+        return Element(id: elementID).getAttribute(attributeName)
+      }
+      set {
+        guard let value = newValue else { return }
+        let kebabCase = camelToKebab(key)
+        let attributeName = "data-\(kebabCase)"
+        var nameBuffer = Array(attributeName.utf8)
+        nameBuffer.append(0)
+        var valueBuffer = Array(value.utf8)
+        valueBuffer.append(0)
 
-			nameBuffer.withUnsafeBufferPointer { namePtr in
-				namePtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: nameBuffer.count) { namePointer in
-					valueBuffer.withUnsafeBufferPointer { valPtr in
-						valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-							element_setAttribute(elementID, namePointer, Int32(nameBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
-						}
-					}
-				}
-			}
-		}
-	}
+        nameBuffer.withUnsafeBufferPointer { namePtr in
+          namePtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: nameBuffer.count) {
+            namePointer in
+            valueBuffer.withUnsafeBufferPointer { valPtr in
+              valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) {
+                valuePointer in
+                element_setAttribute(
+                  elementID, namePointer, Int32(nameBuffer.count - 1), valuePointer,
+                  Int32(valueBuffer.count - 1))
+              }
+            }
+          }
+        }
+      }
+    }
 
-	public subscript(dynamicMember key: String) -> DatasetPropertySetter {
-		return DatasetPropertySetter(elementID: elementID, attribute: stringConcat("data-", camelToKebab(key)))
-	}
+    public subscript(dynamicMember key: String) -> DatasetPropertySetter {
+      return DatasetPropertySetter(elementID: elementID, attribute: "data-\(camelToKebab(key))")
+    }
 
-	private func camelToKebab(_ str: String) -> String {
-		var result: [UInt8] = []
-		str.utf8.withContiguousStorageIfAvailable { ptr in
-			for i in 0..<ptr.count {
-				let char = ptr[i]
-				if char >= 65 && char <= 90 { // A-Z
-					if i > 0 {
-						result.append(45) // '-'
-					}
-					result.append(char + 32) // to lowercase
-				} else {
-					result.append(char)
-				}
-			}
-		}
+    public func getAttribute(_ key: String) -> String? {
+      return self[key]
+    }
 
-		// Fallback if contiguous storage not available (rare for String)
-		if result.isEmpty {
-			for char in str.utf8 {
-				if char >= 65 && char <= 90 { // A-Z
-					if !result.isEmpty {
-						result.append(45) // '-'
-					}
-					result.append(char + 32)
-				} else {
-					result.append(char)
-				}
-			}
-		}
+    private func camelToKebab(_ str: String) -> String {
+      var result: [UInt8] = []
+      str.utf8.withContiguousStorageIfAvailable { ptr in
+        for i in 0..<ptr.count {
+          let char = ptr[i]
+          if char >= 65 && char <= 90 {  // A-Z
+            if i > 0 {
+              result.append(45)  // '-'
+            }
+            result.append(char + 32)  // to lowercase
+          } else {
+            result.append(char)
+          }
+        }
+      }
 
-		return String(decoding: result, as: UTF8.self)
-	}
-}
+      // Fallback if contiguous storage not available (rare for String)
+      if result.isEmpty {
+        for char in str.utf8 {
+          if char >= 65 && char <= 90 {  // A-Z
+            if !result.isEmpty {
+              result.append(45)  // '-'
+            }
+            result.append(char + 32)
+          } else {
+            result.append(char)
+          }
+        }
+      }
 
+      return String(decoding: result, as: UTF8.self)
+    }
+  }
 #endif

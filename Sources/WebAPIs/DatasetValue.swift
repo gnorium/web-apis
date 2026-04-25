@@ -1,7 +1,5 @@
-#if os(WASI)
-
-public protocol DatasetValue {
-	var rawValue: StaticString { get }
-}
-
+#if CLIENT
+  public protocol DatasetValue {
+    var rawValue: StaticString { get }
+  }
 #endif

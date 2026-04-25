@@ -1,45 +1,77 @@
-#if os(WASI)
+#if CLIENT
+  import EmbeddedSwiftUtilities
+  import WebTypes
 
-import EmbeddedSwiftUtilities
-import WebTypes
+  @dynamicCallable
+  public struct CSSOverflowSetter: Sendable {
+    let elementID: Int32
 
-@dynamicCallable
-public struct CSSOverflowSetter: Sendable {
-	let elementID: Int32
+    @_disfavoredOverload
+    public func dynamicallyCall(withArguments args: [CSSOverflow]) {
+      guard let value = args.first else { return }
+      setProperty("overflow", value.rawValue)
+    }
 
-	public func dynamicallyCall(withArguments args: [CSSOverflow]) {
-		guard let value = args.first else { return }
-		let stringValue = value.rawValue
-		var propBuffer = Array("overflow".utf8)
-		propBuffer.append(0)
-		var valueBuffer = Array(stringValue.utf8)
-		valueBuffer.append(0)
+    public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
+      guard let value = args.first else { return }
+      setProperty("overflow", value.staticRawValue)
+    }
 
-		propBuffer.withUnsafeBufferPointer { propPtr in
-			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
-				valueBuffer.withUnsafeBufferPointer { valPtr in
-					valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-						element_setStyleProperty(elementID, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
-					}
-				}
-			}
-		}
-	}
+    public func dynamicallyCall(withArguments args: [CSSKeyword.Auto]) {
+      guard let value = args.first else { return }
+      setProperty("overflow", value.staticRawValue)
+    }
 
-	public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
-		guard let value = args.first else { return }
-		var propBuffer = Array("overflow".utf8)
-		propBuffer.append(0)
-		value.staticRawValue.withUTF8Buffer { valueBuffer in
-			propBuffer.withUnsafeBufferPointer { propPtr in
-				propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
-					valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePtr in
-						element_setStyleProperty(elementID, propPointer, Int32(propBuffer.count - 1), valuePtr, Int32(valueBuffer.count))
-					}
-				}
-			}
-		}
-	}
-}
+    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+      guard let value = args.first else { return }
+      setProperty("overflow", value.staticRawValue)
+    }
 
+    public func dynamicallyCall(withArguments args: [String]) {
+      guard let value = args.first else { return }
+      setProperty("overflow", value)
+    }
+
+    private func setProperty(_ property: StaticString, _ value: String) {
+      property.withUTF8Buffer { propBuff in
+        propBuff.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuff.count) {
+          propPtr in
+          var valBuff = Array(value.utf8)
+          valBuff.append(0)
+          valBuff.withUnsafeBufferPointer { valPtr in
+            valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valBuff.count) {
+              valCCharPtr in
+              element_setStyleProperty(
+                elementID,
+                propPtr,
+                Int32(propBuff.count),
+                valCCharPtr,
+                Int32(valBuff.count - 1)
+              )
+            }
+          }
+        }
+      }
+    }
+
+    private func setProperty(_ property: StaticString, _ value: StaticString) {
+      property.withUTF8Buffer { propBuff in
+        propBuff.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuff.count) {
+          propPtr in
+          value.withUTF8Buffer { valBuff in
+            valBuff.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valBuff.count) {
+              valPtr in
+              element_setStyleProperty(
+                elementID,
+                propPtr,
+                Int32(propBuff.count),
+                valPtr,
+                Int32(valBuff.count)
+              )
+            }
+          }
+        }
+      }
+    }
+  }
 #endif

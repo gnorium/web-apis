@@ -1,410 +1,477 @@
-#if os(WASI)
-
-import EmbeddedSwiftUtilities
-import WebTypes
-
-public struct Window: Sendable {
-	public final class Location: @unchecked Sendable {
-		public var href: String {
-			get {
-				let bufferSize = 1024 * 4
-				let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-				defer { buffer.deallocate() }
-				let len = window_getLocationHref(buffer, Int32(bufferSize))
-				if len > 0 {
-					let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
-					return String(decoding: bytes, as: UTF8.self)
-				}
-				return ""
-			}
-			set {
-				var buffer = Array(newValue.utf8)
-				buffer.append(0)
-
-				buffer.withUnsafeBufferPointer { ptr in
-					ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-						window_setLocationHref(pointer, Int32(buffer.count - 1))
-					}
-				}
-			}
-		}
-
-		public var pathname: String {
-			let bufferSize = 1024
-			let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-			defer { buffer.deallocate() }
-			let len = window_getLocationPathname(buffer, Int32(bufferSize))
-			if len > 0 {
-				let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
-				return String(decoding: bytes, as: UTF8.self)
-			}
-			return ""
-		}
-
-		public var search: String {
-			let bufferSize = 1024 * 4
-			let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-			defer { buffer.deallocate() }
-			let len = window_getLocationSearch(buffer, Int32(bufferSize))
-			if len > 0 {
-				let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
-				return String(decoding: bytes, as: UTF8.self)
-			}
-			return ""
-		}
-
-		public init() {}
-	}
-
-	public func matchMedia(_ query: MediaQueryList) -> Bool {
-		return query.withCString { pointer, len in
-			let result = window_matchMedia(pointer, len)
-			return result != 0
-		}
-	}
-
-	public func matchMedia(_ query: StaticString) -> Bool {
-		return matchMedia(MediaQueryList(query))
-	}
-
-	public func onMediaQueryChange(_ query: MediaQueryList, _ handler: @escaping @Sendable (Bool) -> Void) {
-		let callbackID = CallbackRegistry.register { matches in
-			handler(matches.equals("true"))
-		}
-		query.withCString { pointer, len in
-			window_matchMediaAddListener(pointer, len, Int32(callbackID))
-		}
-	}
-
-	public func onMediaQueryChange(_ query: StaticString, _ handler: @escaping @Sendable (Bool) -> Void) {
-		onMediaQueryChange(MediaQueryList(query), handler)
-	}
-
-	public func dispatchEvent(_ event: Element) {
-		window_dispatchEvent(Int32(event.id))
-	}
-
-	public func addEventListener(_ eventName: String, _ handler: @escaping @Sendable (CallbackString) -> Void) {
-		let callbackID = CallbackRegistry.register(handler)
-		var buffer = Array(eventName.utf8)
-		buffer.append(0)
-
-		buffer.withUnsafeBufferPointer { ptr in
-			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				window_addEventListener(pointer, Int32(buffer.count - 1), Int32(callbackID))
-			}
-		}
-	}
-
-	public func addEventListener(_ event: Event.`Type`, _ handler: @escaping @Sendable (CallbackString) -> Void) {
-		addEventListener(event.rawValue, handler)
-	}
-
-	@discardableResult
-	public func requestAnimationFrame(_ callback: @escaping @Sendable () -> Void) -> Int32 {
-		let callbackID = CallbackRegistry.register { _ in
-			callback()
-		}
-		return window_requestAnimationFrame(Int32(callbackID))
-	}
-
-	public func cancelAnimationFrame(_ id: Int32) {
-		window_cancelAnimationFrame(id)
-	}
-
-	@discardableResult
-	public func setTimeout(_ ms: Double, _ callback: @escaping @Sendable () -> Void) -> Int32 {
-		let callbackID = CallbackRegistry.register { _ in
-			callback()
-		}
-		return window_setTimeout(ms, Int32(callbackID))
-	}
-
-	public func clearTimeout(_ timerID: Int32) {
-		window_clearTimeout(timerID)
-	}
-
-	/// Standard scrollTo API - scrolls to specified coordinates
-	/// - Parameters:
-	///   - x: X coordinate to scroll to
-	///   - y: Y coordinate to scroll to
-	///   - behavior: 0 for auto (default), 1 for smooth
-	public func scrollTo(_ x: Double, _ y: Double, behavior: ScrollBehavior = .auto) {
-		window_scrollTo(x, y, Int32(behavior.rawValue))
-	}
-
-	public func replaceURL(_ url: String) {
-		var buffer = Array(url.utf8)
-		buffer.append(0)
-		buffer.withUnsafeBufferPointer { ptr in
-			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				history_replaceURL(pointer, Int32(buffer.count - 1))
-			}
-		}
-	}
-
-	public var location: Location {
-		Location()
-	}
-
-	public struct URL {
-		public static func createObjectURL(_ blobID: Int32) -> String {
-			let bufferSize = 1024
-			let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-			defer { buffer.deallocate() }
-			let len = window_createObjectURL(blobID, buffer, Int32(bufferSize))
-			if len > 0 {
-				let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map { UInt8(bitPattern: $0) }
-				return String(decoding: bytes, as: UTF8.self)
-			}
-			return ""
-		}
-
-		public static func revokeObjectURL(_ url: String) {
-			var buffer = Array(url.utf8)
-			buffer.append(0)
-
-			buffer.withUnsafeBufferPointer { ptr in
-				ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-					window_revokeObjectURL(pointer, Int32(buffer.count - 1))
-				}
-			}
-		}
-	}
-
-	public struct Performance: Sendable {
-		public func now() -> Double {
-			window_performanceNow()
-		}
-	}
-
-	public struct Navigator: Sendable {
-		public struct Clipboard: Sendable {
-			public init() {}
-			public func writeText(_ text: String) {
-				var buffer = Array(text.utf8)
-				buffer.append(0)
-				buffer.withUnsafeBufferPointer { ptr in
-					ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-						navigator_clipboard_writeText(pointer, Int32(buffer.count - 1))
-					}
-				}
-			}
-		}
-		public let clipboard = Clipboard()
-		public init() {}
-	}
-
-	public let performance = Performance()
-	public let navigator = Navigator()
-
-	public func alert(_ message: String) {
-		var buffer = Array(message.utf8)
-		buffer.append(0)
-
-		buffer.withUnsafeBufferPointer { ptr in
-			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				window_alert(pointer, Int32(buffer.count - 1))
-			}
-		}
-	}
-
-	public func confirm(_ message: String) -> Bool {
-		var buffer = Array(message.utf8)
-		buffer.append(0)
-
-		return buffer.withUnsafeBufferPointer { ptr in
-			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-				let result = window_confirm(pointer, Int32(buffer.count - 1))
-				return result != 0
-			}
-		}
-	}
-
-	public func fetch(_ url: String, method: String = "GET", body: String? = nil, _ callback: @escaping @Sendable (FetchResponse) -> Void) {
-		let callbackID = CallbackRegistry.register { result in
-			callback(FetchResponse(jsonString: result.toString()))
-		}
-
-		var urlBuffer = Array(url.utf8)
-		urlBuffer.append(0)
-		var methodBuffer = Array(method.utf8)
-		methodBuffer.append(0)
-
-		urlBuffer.withUnsafeBufferPointer { urlPtr in
-			urlPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { urlPointer in
-				methodBuffer.withUnsafeBufferPointer { methodPtr in
-					methodPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: methodBuffer.count) { methodPointer in
-						if let body = body {
-							var bodyBuffer = Array(body.utf8)
-							bodyBuffer.append(0)
-							bodyBuffer.withUnsafeBufferPointer { bodyPtr in
-								bodyPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bodyBuffer.count) { bodyPointer in
-									window_fetch(urlPointer, Int32(urlBuffer.count - 1), methodPointer, Int32(methodBuffer.count - 1), bodyPointer, Int32(bodyBuffer.count - 1), Int32(callbackID))
-								}
-							}
-						} else {
-							window_fetch(urlPointer, Int32(urlBuffer.count - 1), methodPointer, Int32(methodBuffer.count - 1), nil, 0, Int32(callbackID))
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-public struct FetchResponse: Sendable {
-	let jsonString: String
-
-	public func text() -> String {
-		jsonString
-	}
-}
-
-// MARK: - EventSource (SSE) Support
-
-/// A wrapper for EventSource (Server-Sent Events)
-public final class EventSource: @unchecked Sendable {
-	private let sseID: Int32
-	private var isClosed = false
-
-	/// Create an EventSource connection to the given URL
-	/// - Parameters:
-	///   - url: The SSE endpoint URL
-	///   - onStart: Called when the 'start' event is received
-	///   - onChunk: Called when a 'chunk' event is received
-	///   - onDone: Called when the 'done' event is received
-	///   - onError: Called when an error occurs
-	public init(
-		url: String,
-		onStart: @escaping @Sendable (String) -> Void,
-		onChunk: @escaping @Sendable (String) -> Void,
-		onDone: @escaping @Sendable (String) -> Void,
-		onError: @escaping @Sendable (String) -> Void
-	) {
-		let startCallbackID = CallbackRegistry.register { data in
-			onStart(data.toString())
-		}
-		let chunkCallbackID = CallbackRegistry.register { data in
-			onChunk(data.toString())
-		}
-		let doneCallbackID = CallbackRegistry.register { data in
-			onDone(data.toString())
-		}
-		let errorCallbackID = CallbackRegistry.register { data in
-			onError(data.toString())
-		}
-
-		var urlBuffer = Array(url.utf8)
-		urlBuffer.append(0)
-
-		self.sseID = urlBuffer.withUnsafeBufferPointer { ptr in
-			ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { pointer in
-				sse_create(
-					pointer, Int32(urlBuffer.count - 1),
-					Int32(startCallbackID),
-					Int32(chunkCallbackID),
-					Int32(doneCallbackID),
-					Int32(errorCallbackID)
-				)
-			}
-		}
-	}
-
-	/// Close the EventSource connection
-	public func close() {
-		guard !isClosed else { return }
-		isClosed = true
-		sse_close(sseID)
-	}
-
-	deinit {
-		close()
-	}
-}
-
-@_extern(wasm, module: "env", name: "sse_create")
-func sse_create(
-	_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32,
-	_ startCallbackID: Int32,
-	_ chunkCallbackID: Int32,
-	_ doneCallbackID: Int32,
-	_ errorCallbackID: Int32
-) -> Int32
-
-@_extern(wasm, module: "env", name: "sse_close")
-func sse_close(_ sseID: Int32)
-
-public let window = Window()
-
-@_extern(wasm, module: "env", name: "window_alert")
-func window_alert(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32)
-
-@_extern(wasm, module: "env", name: "window_confirm")
-func window_confirm(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32) -> Int32
-
-@_extern(wasm, module: "env", name: "window_fetch")
-func window_fetch(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ methodPointer: UnsafePointer<CChar>, _ methodLen: Int32, _ bodyPointer: UnsafePointer<CChar>?, _ bodyLen: Int32, _ callbackID: Int32)
-
-@_extern(wasm, module: "env", name: "window_matchMedia")
-func window_matchMedia(_ queryPointer: UnsafePointer<CChar>, _ queryLen: Int32) -> Int32
-
-@_extern(wasm, module: "env", name: "window_matchMediaAddListener")
-func window_matchMediaAddListener(_ queryPointer: UnsafePointer<CChar>, _ queryLen: Int32, _ callbackID: Int32)
-
-@_extern(wasm, module: "env", name: "window_dispatchEvent")
-func window_dispatchEvent(_ elementID: Int32)
-
-@_extern(wasm, module: "env", name: "window_addEventListener")
-func window_addEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
-
-@_extern(wasm, module: "env", name: "window_requestAnimationFrame")
-func window_requestAnimationFrame(_ callbackID: Int32) -> Int32
-
-@_extern(wasm, module: "env", name: "window_cancelAnimationFrame")
-func window_cancelAnimationFrame(_ id: Int32)
-
-@_extern(wasm, module: "env", name: "window_setTimeout")
-func window_setTimeout(_ ms: Double, _ callbackID: Int32) -> Int32
-
-@_extern(wasm, module: "env", name: "window_clearTimeout")
-func window_clearTimeout(_ timerID: Int32)
-
-@_extern(wasm, module: "env", name: "window_scrollTo")
-func window_scrollTo(_ x: Double, _ y: Double, _ behavior: Int32)
-
-@_extern(wasm, module: "env", name: "window_getLocationHref")
-func window_getLocationHref(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
-
-@_extern(wasm, module: "env", name: "getLocationPathname")
-func window_getLocationPathname(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
-
-@_extern(wasm, module: "env", name: "getLocationSearch")
-func window_getLocationSearch(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
-
-@_extern(wasm, module: "env", name: "window_setLocationHref")
-func window_setLocationHref(_ hrefPointer: UnsafePointer<CChar>, _ hrefLen: Int32)
-
-@_extern(wasm, module: "env", name: "history_replaceURL")
-func history_replaceURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
-
-@_extern(wasm, module: "env", name: "window_performanceNow")
-func window_performanceNow() -> Double
-
-public func getPerformanceNow() -> Double {
-	window_performanceNow()
-}
-
-@_extern(wasm, module: "env", name: "window_createObjectURL")
-func window_createObjectURL(_ blobID: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
-
-@_extern(wasm, module: "env", name: "window_revokeObjectURL")
-func window_revokeObjectURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
-
-@_extern(wasm, module: "env", name: "navigator_clipboard_writeText")
-func navigator_clipboard_writeText(_ textPointer: UnsafePointer<CChar>, _ textLen: Int32)
-
-@_extern(wasm, module: "env", name: "canvas_toBlob")
-public func canvas_toBlob(_ canvasID: Int32, _ callbackID: Int32)
-
+#if CLIENT
+  import DOMBuilder
+  import EmbeddedSwiftUtilities
+  import WebTypes
+
+  public struct Window: Sendable {
+    public final class Location: @unchecked Sendable {
+      public var href: String {
+        get {
+          let bufferSize = 1024 * 4
+          let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+          defer { buffer.deallocate() }
+          let len = window_getLocationHref(buffer, Int32(bufferSize))
+          if len > 0 {
+            let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map {
+              UInt8(bitPattern: $0)
+            }
+            return String(decoding: bytes, as: UTF8.self)
+          }
+          return ""
+        }
+        set {
+          var buffer = Array(newValue.utf8)
+          buffer.append(0)
+
+          buffer.withUnsafeBufferPointer { ptr in
+            ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+              window_setLocationHref(pointer, Int32(buffer.count - 1))
+            }
+          }
+        }
+      }
+
+      public var pathname: String {
+        let bufferSize = 1024
+        let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+        defer { buffer.deallocate() }
+        let len = window_getLocationPathname(buffer, Int32(bufferSize))
+        if len > 0 {
+          let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map {
+            UInt8(bitPattern: $0)
+          }
+          return String(decoding: bytes, as: UTF8.self)
+        }
+        return ""
+      }
+
+      public var search: String {
+        let bufferSize = 1024 * 4
+        let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+        defer { buffer.deallocate() }
+        let len = window_getLocationSearch(buffer, Int32(bufferSize))
+        if len > 0 {
+          let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map {
+            UInt8(bitPattern: $0)
+          }
+          return String(decoding: bytes, as: UTF8.self)
+        }
+        return ""
+      }
+
+      public init() {}
+    }
+
+    public func matchMedia(_ query: MediaQueryList) -> Bool {
+      return query.withCString { pointer, len in
+        let result = window_matchMedia(pointer, len)
+        return result != 0
+      }
+    }
+
+    public func matchMedia(_ query: StaticString) -> Bool {
+      return matchMedia(MediaQueryList(query))
+    }
+
+    public func onMediaQueryChange(
+      _ query: MediaQueryList, _ handler: @escaping @Sendable (Bool) -> Void
+    ) {
+      let callbackID = CallbackRegistry.register { matches in
+        handler(matches.equals("true"))
+      }
+      query.withCString { pointer, len in
+        window_matchMediaAddListener(pointer, len, Int32(callbackID))
+      }
+    }
+
+    public func onMediaQueryChange(
+      _ query: StaticString, _ handler: @escaping @Sendable (Bool) -> Void
+    ) {
+      onMediaQueryChange(MediaQueryList(query), handler)
+    }
+
+    public struct URL {
+      public static func createObjectURL(_ blobID: Int32) -> String {
+        let bufferSize = 1024
+        let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+        defer { buffer.deallocate() }
+        let len = window_createObjectURL(blobID, buffer, Int32(bufferSize))
+        if len > 0 {
+          let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map {
+            UInt8(bitPattern: $0)
+          }
+          return String(decoding: bytes, as: UTF8.self)
+        }
+        return ""
+      }
+
+      public static func revokeObjectURL(_ url: String) {
+        var buffer = Array(url.utf8)
+        buffer.append(0)
+
+        buffer.withUnsafeBufferPointer { ptr in
+          ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+            window_revokeObjectURL(pointer, Int32(buffer.count - 1))
+          }
+        }
+      }
+    }
+
+    public struct Performance: Sendable {
+      public func now() -> Double {
+        window_performanceNow()
+      }
+    }
+
+    public struct Navigator: Sendable {
+      public struct Clipboard: Sendable {
+        public init() {}
+        public func writeText(_ text: String) {
+          var buffer = Array(text.utf8)
+          buffer.append(0)
+          buffer.withUnsafeBufferPointer { ptr in
+            ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+              navigator_clipboard_writeText(pointer, Int32(buffer.count - 1))
+            }
+          }
+        }
+      }
+      public let clipboard = Clipboard()
+      public init() {}
+    }
+
+    public let performance = Performance()
+    public let navigator = Navigator()
+  }
+
+  extension Window: EventTargeting {
+    public func dispatchEvent(_ event: Element) {
+      window_dispatchEvent(Int32(event.id))
+    }
+
+    @discardableResult
+    public func addEventListener(
+      _ event: StaticString, _ handler: @escaping @Sendable (Event) -> Void
+    ) -> Window {
+      let callbackID = CallbackRegistry.register { payload in
+        handler(Event(payload: payload))
+      }
+      event.withUTF8Buffer { buffer in
+        buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          window_addEventListener(pointer, Int32(buffer.count), Int32(callbackID))
+        }
+      }
+      return self
+    }
+
+    @discardableResult
+    public func addEventListener(
+      _ event: Event.`Type`, _ handler: @escaping @Sendable (Event) -> Void
+    ) -> Window {
+      return addEventListener(event.staticString, handler)
+    }
+
+    public func removeEventListener(_ event: StaticString) {
+      event.withUTF8Buffer { buffer in
+        buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          window_removeEventListener(pointer, Int32(buffer.count))
+        }
+      }
+    }
+
+    public func dispatchEvent(_ event: StaticString) {
+      event.withUTF8Buffer { buffer in
+        buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          window_dispatchEvent_by_name(pointer, Int32(buffer.count))
+        }
+      }
+    }
+
+    public func dispatchEvent(_ event: CustomEvent) {
+      window_dispatchCustomEvent(event.pointer)
+    }
+  }
+
+  extension Window {
+    @discardableResult
+    public func requestAnimationFrame(_ callback: @escaping @Sendable () -> Void) -> Int32 {
+      let callbackID = CallbackRegistry.register { _ in
+        callback()
+      }
+      return window_requestAnimationFrame(Int32(callbackID))
+    }
+
+    public func cancelAnimationFrame(_ id: Int32) {
+      window_cancelAnimationFrame(id)
+    }
+
+    @discardableResult
+    public func setTimeout(_ ms: Double, _ callback: @escaping @Sendable () -> Void) -> Int32 {
+      let callbackID = CallbackRegistry.register { _ in
+        callback()
+      }
+      return window_setTimeout(ms, Int32(callbackID))
+    }
+
+    public func clearTimeout(_ timerID: Int32) {
+      window_clearTimeout(timerID)
+    }
+
+    /// Standard scrollTo API - scrolls to specified coordinates
+    /// - Parameters:
+    ///   - x: X coordinate to scroll to
+    ///   - y: Y coordinate to scroll to
+    ///   - behavior: 0 for auto (default), 1 for smooth
+    public func scrollTo(_ x: Double, _ y: Double, behavior: ScrollBehavior = .auto) {
+      window_scrollTo(x, y, Int32(behavior.rawValue))
+    }
+
+    public func replaceURL(_ url: String) {
+      var buffer = Array(url.utf8)
+      buffer.append(0)
+      buffer.withUnsafeBufferPointer { ptr in
+        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          history_replaceURL(pointer, Int32(buffer.count - 1))
+        }
+      }
+    }
+
+    public var location: Location {
+      Location()
+    }
+
+    public func alert(_ message: String) {
+      var buffer = Array(message.utf8)
+      buffer.append(0)
+
+      buffer.withUnsafeBufferPointer { ptr in
+        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          window_alert(pointer, Int32(buffer.count - 1))
+        }
+      }
+    }
+
+    public func confirm(_ message: String) -> Bool {
+      var buffer = Array(message.utf8)
+      buffer.append(0)
+
+      return buffer.withUnsafeBufferPointer { ptr in
+        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          let result = window_confirm(pointer, Int32(buffer.count - 1))
+          return result != 0
+        }
+      }
+    }
+
+    public func fetch(
+      _ url: String, method: String = "GET", body: String? = nil,
+      _ callback: @escaping @Sendable (FetchResponse) -> Void
+    ) {
+      let callbackID = CallbackRegistry.register { result in
+        callback(FetchResponse(jsonString: result.toString()))
+      }
+
+      var urlBuffer = Array(url.utf8)
+      urlBuffer.append(0)
+      var methodBuffer = Array(method.utf8)
+      methodBuffer.append(0)
+
+      urlBuffer.withUnsafeBufferPointer { urlPtr in
+        urlPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) {
+          urlPointer in
+          methodBuffer.withUnsafeBufferPointer { methodPtr in
+            methodPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: methodBuffer.count) {
+              methodPointer in
+              if let body = body {
+                var bodyBuffer = Array(body.utf8)
+                bodyBuffer.append(0)
+                bodyBuffer.withUnsafeBufferPointer { bodyPtr in
+                  bodyPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bodyBuffer.count)
+                  { bodyPointer in
+                    window_fetch(
+                      urlPointer, Int32(urlBuffer.count - 1), methodPointer,
+                      Int32(methodBuffer.count - 1), bodyPointer, Int32(bodyBuffer.count - 1),
+                      Int32(callbackID))
+                  }
+                }
+              } else {
+                window_fetch(
+                  urlPointer, Int32(urlBuffer.count - 1), methodPointer,
+                  Int32(methodBuffer.count - 1), nil, 0, Int32(callbackID))
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  public struct FetchResponse: Sendable {
+    let jsonString: String
+
+    public func text() -> String {
+      jsonString
+    }
+  }
+
+  // MARK: - EventSource (SSE) Support
+
+  /// A wrapper for EventSource (Server-Sent Events)
+  public final class EventSource: @unchecked Sendable {
+    private let sseID: Int32
+    private var isClosed = false
+
+    /// Create an EventSource connection to the given URL
+    /// - Parameters:
+    ///   - url: The SSE endpoint URL
+    ///   - onStart: Called when the 'start' event is received
+    ///   - onChunk: Called when a 'chunk' event is received
+    ///   - onDone: Called when the 'done' event is received
+    ///   - onError: Called when an error occurs
+    public init(
+      url: String,
+      onStart: @escaping @Sendable (String) -> Void,
+      onChunk: @escaping @Sendable (String) -> Void,
+      onDone: @escaping @Sendable (String) -> Void,
+      onError: @escaping @Sendable (String) -> Void
+    ) {
+      let startCallbackID = CallbackRegistry.register { data in
+        onStart(data.toString())
+      }
+      let chunkCallbackID = CallbackRegistry.register { data in
+        onChunk(data.toString())
+      }
+      let doneCallbackID = CallbackRegistry.register { data in
+        onDone(data.toString())
+      }
+      let errorCallbackID = CallbackRegistry.register { data in
+        onError(data.toString())
+      }
+
+      var urlBuffer = Array(url.utf8)
+      urlBuffer.append(0)
+
+      self.sseID = urlBuffer.withUnsafeBufferPointer { ptr in
+        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { pointer in
+          sse_create(
+            pointer, Int32(urlBuffer.count - 1),
+            Int32(startCallbackID),
+            Int32(chunkCallbackID),
+            Int32(doneCallbackID),
+            Int32(errorCallbackID)
+          )
+        }
+      }
+    }
+
+    /// Close the EventSource connection
+    public func close() {
+      guard !isClosed else { return }
+      isClosed = true
+      sse_close(sseID)
+    }
+
+    deinit {
+      close()
+    }
+  }
+
+  @_extern(wasm, module: "env", name: "sse_create")
+  func sse_create(
+    _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32,
+    _ startCallbackID: Int32,
+    _ chunkCallbackID: Int32,
+    _ doneCallbackID: Int32,
+    _ errorCallbackID: Int32
+  ) -> Int32
+
+  @_extern(wasm, module: "env", name: "sse_close")
+  func sse_close(_ sseID: Int32)
+
+  public let window = Window()
+
+  @_extern(wasm, module: "env", name: "window_alert")
+  func window_alert(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32)
+
+  @_extern(wasm, module: "env", name: "window_confirm")
+  func window_confirm(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_fetch")
+  func window_fetch(
+    _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ methodPointer: UnsafePointer<CChar>,
+    _ methodLen: Int32, _ bodyPointer: UnsafePointer<CChar>?, _ bodyLen: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "window_matchMedia")
+  func window_matchMedia(_ queryPointer: UnsafePointer<CChar>, _ queryLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_matchMediaAddListener")
+  func window_matchMediaAddListener(
+    _ queryPointer: UnsafePointer<CChar>, _ queryLen: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "window_dispatchEvent")
+  func window_dispatchEvent(_ elementID: Int32)
+
+  @_extern(wasm, module: "env", name: "window_addEventListener")
+  func window_addEventListener(
+    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "window_requestAnimationFrame")
+  func window_requestAnimationFrame(_ callbackID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_cancelAnimationFrame")
+  func window_cancelAnimationFrame(_ id: Int32)
+
+  @_extern(wasm, module: "env", name: "window_setTimeout")
+  func window_setTimeout(_ ms: Double, _ callbackID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_clearTimeout")
+  func window_clearTimeout(_ timerID: Int32)
+
+  @_extern(wasm, module: "env", name: "window_scrollTo")
+  func window_scrollTo(_ x: Double, _ y: Double, _ behavior: Int32)
+
+  @_extern(wasm, module: "env", name: "window_getLocationHref")
+  func window_getLocationHref(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "getLocationPathname")
+  func window_getLocationPathname(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "getLocationSearch")
+  func window_getLocationSearch(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_setLocationHref")
+  func window_setLocationHref(_ hrefPointer: UnsafePointer<CChar>, _ hrefLen: Int32)
+
+  @_extern(wasm, module: "env", name: "history_replaceURL")
+  func history_replaceURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
+
+  @_extern(wasm, module: "env", name: "window_performanceNow")
+  func window_performanceNow() -> Double
+
+  public func getPerformanceNow() -> Double {
+    window_performanceNow()
+  }
+
+  @_extern(wasm, module: "env", name: "window_createObjectURL")
+  func window_createObjectURL(
+    _ blobID: Int32, _ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32
+  ) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_revokeObjectURL")
+  func window_revokeObjectURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
+
+  @_extern(wasm, module: "env", name: "navigator_clipboard_writeText")
+  func navigator_clipboard_writeText(_ textPointer: UnsafePointer<CChar>, _ textLen: Int32)
+
+  @_extern(wasm, module: "env", name: "canvas_toBlob")
+  public func canvas_toBlob(_ canvasID: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "window_removeEventListener")
+  func window_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
+
+  @_extern(wasm, module: "env", name: "window_dispatchEvent_by_name")
+  func window_dispatchEvent_by_name(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
+
+  @_extern(wasm, module: "env", name: "window_dispatchCustomEvent")
+  func window_dispatchCustomEvent(_ eventPointer: Int32)
 #endif

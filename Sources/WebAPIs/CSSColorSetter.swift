@@ -1,48 +1,76 @@
-#if os(WASI)
+#if CLIENT
+  import EmbeddedSwiftUtilities
+  import WebTypes
 
-import EmbeddedSwiftUtilities
-import WebTypes
+  @dynamicCallable
+  public struct CSSColorSetter: Sendable {
+    let elementID: Int32
+    let property: String
 
-@dynamicCallable
-public struct CSSColorSetter: Sendable {
-	let elementID: Int32
-	let property: String
+    public func dynamicallyCall(withArguments args: [CSSColor]) {
+      guard let value = args.first else { return }
+      let stringValue = value.value
+      var propBuffer = Array(property.utf8)
+      propBuffer.append(0)
+      var valueBuffer = Array(stringValue.utf8)
+      valueBuffer.append(0)
 
-	public func dynamicallyCall(withArguments args: [CSSColor]) {
-		guard let value = args.first else { return }
-		let stringValue = value.value
-		var propBuffer = Array(property.utf8)
-		propBuffer.append(0)
-		var valueBuffer = Array(stringValue.utf8)
-		valueBuffer.append(0)
+      propBuffer.withUnsafeBufferPointer { propPtr in
+        propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) {
+          propPointer in
+          valueBuffer.withUnsafeBufferPointer { valPtr in
+            valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) {
+              valuePointer in
+              element_setStyleProperty(
+                elementID, propPointer, Int32(propBuffer.count - 1), valuePointer,
+                Int32(valueBuffer.count - 1))
+            }
+          }
+        }
+      }
+    }
 
-		propBuffer.withUnsafeBufferPointer { propPtr in
-			propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
-				valueBuffer.withUnsafeBufferPointer { valPtr in
-					valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePointer in
-						element_setStyleProperty(elementID, propPointer, Int32(propBuffer.count - 1), valuePointer, Int32(valueBuffer.count - 1))
-					}
-				}
-			}
-		}
-	}
+    // Support for global keywords like .inherit
+    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+      guard let value = args.first else { return }
+      var propBuffer = Array(property.utf8)
+      propBuffer.append(0)
 
-	// Support for global keywords like .inherit
-	public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
-		guard let value = args.first else { return }
-		var propBuffer = Array(property.utf8)
-		propBuffer.append(0)
+      value.rawValue.withUTF8Buffer { valueBuffer in
+        propBuffer.withUnsafeBufferPointer { propPtr in
+          propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) {
+            propPointer in
+            valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count)
+            { valuePtr in
+              element_setStyleProperty(
+                elementID, propPointer, Int32(propBuffer.count - 1), valuePtr,
+                Int32(valueBuffer.count))
+            }
+          }
+        }
+      }
+    }
 
-		value.rawValue.withUTF8Buffer { valueBuffer in
-			propBuffer.withUnsafeBufferPointer { propPtr in
-				propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) { propPointer in
-					valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) { valuePtr in
-						element_setStyleProperty(elementID, propPointer, Int32(propBuffer.count - 1), valuePtr, Int32(valueBuffer.count))
-					}
-				}
-			}
-		}
-	}
-}
+    public func dynamicallyCall(withArguments args: [String]) {
+      guard let value = args.first else { return }
+      var propBuffer = Array(property.utf8)
+      propBuffer.append(0)
+      var valBuffer = Array(value.utf8)
+      valBuffer.append(0)
 
+      propBuffer.withUnsafeBufferPointer { propPtr in
+        propPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuffer.count) {
+          propPointer in
+          valBuffer.withUnsafeBufferPointer { valPtr in
+            valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valBuffer.count) {
+              valuePointer in
+              element_setStyleProperty(
+                elementID, propPointer, Int32(propBuffer.count - 1), valuePointer,
+                Int32(valBuffer.count - 1))
+            }
+          }
+        }
+      }
+    }
+  }
 #endif

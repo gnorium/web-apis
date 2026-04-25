@@ -1,7 +1,5 @@
-#if os(WASI)
-
-public protocol CSSPropertyValue {
-	var rawValue: StaticString { get }
-}
-
+#if CLIENT
+  public protocol CSSPropertyValue {
+    var rawValue: StaticString { get }
+  }
 #endif

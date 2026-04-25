@@ -1,12 +1,10 @@
-#if os(WASI)
+#if CLIENT
+  @_extern(wasm, module: "env", name: "hljs_highlightAll")
+  private func js_hljs_highlightAll()
 
-@_extern(wasm, module: "env", name: "hljs_highlightAll")
-fileprivate func js_hljs_highlightAll()
-
-public enum HighlightJS {
+  public enum HighlightJS {
     public static func highlightAll() {
-        js_hljs_highlightAll()
+      js_hljs_highlightAll()
     }
-}
-
+  }
 #endif

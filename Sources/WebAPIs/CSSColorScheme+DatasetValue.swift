@@ -1,11 +1,9 @@
-#if os(WASI)
+#if CLIENT
+  import WebTypes
 
-import WebTypes
-
-extension CSSColorScheme: DatasetValue {
-	public var rawValue: StaticString {
-		staticRawValue
-	}
-}
-
+  extension CSSColorScheme: DatasetValue {
+    public var rawValue: StaticString {
+      staticRawValue
+    }
+  }
 #endif
