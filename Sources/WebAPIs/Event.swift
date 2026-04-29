@@ -287,12 +287,24 @@
     public static let touchcancel: StaticString = "touchcancel"
 
     // Event instance properties
-    public let detail: String
+    private let parsedDetail: String
     private let targetID: Int32
     public let payload: CallbackString
 
+    /// Returns the event detail. For CustomEvents dispatched via the JS bridge,
+    /// this calls event_detail() to retrieve the real .detail from the JS events map.
+    /// Falls back to the parsed payload string for non-CustomEvent callbacks.
+    public var detail: String {
+      // First try the JS bridge — works for CustomEvents stored in the events map
+      let bridgeDetail = payload.detail
+      if !bridgeDetail.isEmpty {
+        return bridgeDetail
+      }
+      return parsedDetail
+    }
+
     public init(detail: String = "", targetID: Int32 = -1) {
-      self.detail = detail
+      self.parsedDetail = detail
       self.targetID = targetID
       self.payload = CallbackString(ptr: UnsafePointer<CChar>.init(bitPattern: 0)!, len: 0)
     }
@@ -304,10 +316,10 @@
       if let colonIndex = stringIndexOfChar(stringValue, 58), colonIndex > 0 {  // 58 is ':'
         let idStr = stringSubstring(stringValue, from: 0, to: colonIndex)
         self.targetID = Int32(safeParseInt(idStr) ?? -1)
-        self.detail = stringSubstring(stringValue, from: colonIndex + 1)
+        self.parsedDetail = stringSubstring(stringValue, from: colonIndex + 1)
       } else {
         self.targetID = -1
-        self.detail = stringValue
+        self.parsedDetail = stringValue
       }
     }
 
