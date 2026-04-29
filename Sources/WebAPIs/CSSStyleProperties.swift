@@ -856,6 +856,12 @@
       setProperty("transition", stringValue)
     }
 
+    public func transition(
+      _ keyword: CSSKeyword.All, _ duration: CSSTime, _ timingFunction: CSSEasingFunction
+    ) {
+      setProperty("transition", "all \(duration.value) \(timingFunction.value)")
+    }
+
     public subscript(dynamicMember property: String) -> CSSPropertySetter {
       return CSSPropertySetter(elementID: elementID, property: camelToKebab(property))
     }

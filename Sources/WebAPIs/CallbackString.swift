@@ -79,33 +79,4 @@
     }
   }
 
-  @_extern(wasm, module: "env", name: "event_key")
-  private func event_key(
-    _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<CChar>,
-    _ bufferLen: Int32
-  ) -> Int32
-
-  @_extern(wasm, module: "env", name: "event_preventDefault")
-  private func event_preventDefault(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32)
-
-  @_extern(wasm, module: "env", name: "event_stopPropagation")
-  private func event_stopPropagation(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32)
-
-  @_extern(wasm, module: "env", name: "event_target")
-  private func event_target(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
-
-  @_extern(wasm, module: "env", name: "event_relatedTarget")
-  private func event_relatedTarget(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
-
-  @_extern(wasm, module: "env", name: "event_detail")
-  private func event_detail(
-    _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<CChar>,
-    _ bufferLen: Int32
-  ) -> Int32
-
-  @_extern(wasm, module: "env", name: "event_clientX")
-  private func event_clientX(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
-
-  @_extern(wasm, module: "env", name: "event_clientY")
-  private func event_clientY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
 #endif

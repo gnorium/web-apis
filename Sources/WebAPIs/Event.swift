@@ -324,16 +324,16 @@
     }
 
     public func preventDefault() {
-      event_preventDefault()
+      event_preventDefault(payload.ptr, Int32(payload.len))
     }
 
     public func stopPropagation() {
-      event_stopPropagation()
+      event_stopPropagation(payload.ptr, Int32(payload.len))
     }
 
     public var key: String {
       var buffer = [UInt8](repeating: 0, count: 64)
-      let len = event_getKey(&buffer, 64)
+      let len = event_getKey(payload.ptr, Int32(payload.len), &buffer, 64)
       if len > 0 {
         return String(decoding: buffer[0..<Int(len)], as: UTF8.self)
       }
@@ -345,12 +345,41 @@
     }
   }
 
-  @_extern(wasm, module: "env", name: "event_preventDefault")
-  func event_preventDefault()
+  // MARK: - Event Externs
 
-  @_extern(wasm, module: "env", name: "event_stopPropagation")
-  func event_stopPropagation()
+  @_extern(wasm, module: "env", name: "event_key")
+  func event_key(
+    _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<CChar>,
+    _ bufferLen: Int32
+  ) -> Int32
 
   @_extern(wasm, module: "env", name: "event_getKey")
-  func event_getKey(_ buffer: UnsafeMutablePointer<UInt8>, _ maxLen: Int32) -> Int32
+  func event_getKey(
+    _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<UInt8>,
+    _ bufferLen: Int32
+  ) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_preventDefault")
+  func event_preventDefault(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32)
+
+  @_extern(wasm, module: "env", name: "event_stopPropagation")
+  func event_stopPropagation(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32)
+
+  @_extern(wasm, module: "env", name: "event_target")
+  func event_target(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_relatedTarget")
+  func event_relatedTarget(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_detail")
+  func event_detail(
+    _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<CChar>,
+    _ bufferLen: Int32
+  ) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_clientX")
+  func event_clientX(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
+
+  @_extern(wasm, module: "env", name: "event_clientY")
+  func event_clientY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
 #endif
