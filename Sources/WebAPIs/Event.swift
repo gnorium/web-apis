@@ -30,6 +30,8 @@
       case touchend = "touchend"
       case touchmove = "touchmove"
       case touchcancel = "touchcancel"
+      case dblclick = "dblclick"
+      case dragstart = "dragstart"
 
       public var staticString: StaticString {
         switch self {
@@ -59,6 +61,8 @@
         case .touchend: return "touchend"
         case .touchmove: return "touchmove"
         case .touchcancel: return "touchcancel"
+        case .dblclick: return "dblclick"
+        case .dragstart: return "dragstart"
         }
       }
     }
@@ -90,6 +94,8 @@
     public static let touchend: StaticString = "touchend"
     public static let touchmove: StaticString = "touchmove"
     public static let touchcancel: StaticString = "touchcancel"
+    public static let dblclick: StaticString = "dblclick"
+    public static let dragstart: StaticString = "dragstart"
 
     // Event instance properties (Placeholder for server-side event objects if needed)
     public let detail: String
@@ -136,6 +142,8 @@
       case touchend
       case touchmove
       case touchcancel
+      case dblclick
+      case dragstart
 
       public var rawValue: String {
         switch self {
@@ -165,6 +173,8 @@
         case .touchend: return "touchend"
         case .touchmove: return "touchmove"
         case .touchcancel: return "touchcancel"
+        case .dblclick: return "dblclick"
+        case .dragstart: return "dragstart"
         }
       }
 
@@ -221,6 +231,10 @@
           self = .touchmove
         } else if stringEquals(rawValue, "touchcancel") {
           self = .touchcancel
+        } else if stringEquals(rawValue, "dragstart") {
+          self = .dragstart
+        } else if stringEquals(rawValue, "dblclick") {
+          self = .dblclick
         } else {
           return nil
         }
@@ -254,6 +268,8 @@
         case .touchend: return "touchend"
         case .touchmove: return "touchmove"
         case .touchcancel: return "touchcancel"
+        case .dblclick: return "dblclick"
+        case .dragstart: return "dragstart"
         }
       }
     }
@@ -285,6 +301,8 @@
     public static let touchend: StaticString = "touchend"
     public static let touchmove: StaticString = "touchmove"
     public static let touchcancel: StaticString = "touchcancel"
+    public static let dblclick: StaticString = "dblclick"
+    public static let dragstart: StaticString = "dragstart"
 
     // Event instance properties
     private let parsedDetail: String
@@ -315,7 +333,7 @@
       // JS bridge passes "targetID:detail" for standard events
       if let colonIndex = stringIndexOfChar(stringValue, 58), colonIndex > 0 {  // 58 is ':'
         let idStr = stringSubstring(stringValue, from: 0, to: colonIndex)
-        self.targetID = Int32(safeParseInt(idStr) ?? -1)
+        self.targetID = Int32(parseInt(idStr) ?? -1)
         self.parsedDetail = stringSubstring(stringValue, from: colonIndex + 1)
       } else {
         self.targetID = -1
@@ -341,7 +359,20 @@
     }
 
     public var target: Element? {
-      return targetID >= 0 ? ElementFactory.create(id: targetID) : nil
+      let id = event_target(payload.ptr, Int32(payload.len))
+      return id >= 0 ? ElementFactory.create(id: id) : nil
+    }
+
+    public var clientX: Double {
+      event_clientX(payload.ptr, Int32(payload.len))
+    }
+
+    public var clientY: Double {
+      event_clientY(payload.ptr, Int32(payload.len))
+    }
+
+    public var button: Int {
+      Int(event_button(payload.ptr, Int32(payload.len)))
     }
   }
 
@@ -382,4 +413,7 @@
 
   @_extern(wasm, module: "env", name: "event_clientY")
   func event_clientY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
+
+  @_extern(wasm, module: "env", name: "event_button")
+  func event_button(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
 #endif

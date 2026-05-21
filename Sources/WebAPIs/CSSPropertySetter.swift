@@ -23,7 +23,7 @@
               valuePointer in
               element_setStyleProperty(
                 elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePointer,
-                Int32(valueBuffer.count - 1))
+                Int32(valueBuffer.count - 1), nil, 0)
             }
           }
         }
@@ -255,6 +255,13 @@
       }
     }
 
+    // Concrete overload for CSSTextTransform (Needed for dot-syntax resolution like .uppercase)
+    @_disfavoredOverload
+    public func dynamicallyCall(withArguments args: [CSSTextTransform]) {
+      guard let value = args.first else { return }
+      setPropertyStaticString(value.staticRawValue)
+    }
+
     // CSSPointerEvents removed - use CSSPointerEventsSetter instead
 
     // Concrete overload for CSSBoxSizing
@@ -339,7 +346,7 @@
             { valuePtr in
               element_setStyleProperty(
                 elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePtr,
-                Int32(valueBuffer.count))
+                Int32(valueBuffer.count), nil, 0)
             }
           }
         }

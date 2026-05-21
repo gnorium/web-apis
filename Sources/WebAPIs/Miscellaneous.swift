@@ -1,15 +1,12 @@
 #if CLIENT
+  @discardableResult
   public func setTimeout(_ ms: Int, _ callback: @escaping @Sendable () -> Void) -> Int32 {
-    let callbackID = CallbackRegistry.register { _ in
-      callback()
-    }
-    return timing_setTimeout(Int32(ms), Int32(callbackID))
+    window.setTimeout(Double(ms), callback)
   }
 
   public func clearTimeout(_ timerID: Int32) {
-    timing_clearTimeout(timerID)
+    window.clearTimeout(timerID)
   }
-
   /// Format an ISO 8601 date string to the user's local timezone and locale.
   /// Uses the browser's `Intl.DateTimeFormat` via JSContent bridge.
   /// Returns nil if the ISO string is invalid.

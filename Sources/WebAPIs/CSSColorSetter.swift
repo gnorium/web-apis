@@ -23,7 +23,7 @@
               valuePointer in
               element_setStyleProperty(
                 elementID, propPointer, Int32(propBuffer.count - 1), valuePointer,
-                Int32(valueBuffer.count - 1))
+                Int32(valueBuffer.count - 1), nil, 0)
             }
           }
         }
@@ -44,7 +44,7 @@
             { valuePtr in
               element_setStyleProperty(
                 elementID, propPointer, Int32(propBuffer.count - 1), valuePtr,
-                Int32(valueBuffer.count))
+                Int32(valueBuffer.count), nil, 0)
             }
           }
         }
@@ -66,7 +66,7 @@
               valuePointer in
               element_setStyleProperty(
                 elementID, propPointer, Int32(propBuffer.count - 1), valuePointer,
-                Int32(valBuffer.count - 1))
+                Int32(valBuffer.count - 1), nil, 0)
             }
           }
         }

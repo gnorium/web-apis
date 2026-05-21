@@ -22,19 +22,29 @@
           var valueBuffer = Array(value.utf8)
           valueBuffer.append(0)
 
-          valueBuffer.withUnsafeBufferPointer { bufferPtr in
-            bufferPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) {
+          valueBuffer.withUnsafeBufferPointer { valPtr in
+            valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) {
               valuePointer in
-              element_setStyleProperty(
-                elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePointer,
-                Int32(valueBuffer.count - 1))
+              var priorityBuffer = Array(priority.utf8)
+              priorityBuffer.append(0)
+
+              priorityBuffer.withUnsafeBufferPointer { prioPtr in
+                prioPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: priorityBuffer.count)
+                { priorityPointer in
+                  element_setStyleProperty(
+                    elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePointer,
+                    Int32(valueBuffer.count - 1), priorityPointer, Int32(priorityBuffer.count - 1))
+                }
+              }
             }
           }
         }
       }
     }
 
-    public final func setProperty<T: CSSPropertyValue>(_ property: String, _ value: T) {
+    public final func setProperty<T: CSSPropertyValue>(
+      _ property: String, _ value: T, _ priority: String = ""
+    ) {
       var propertyBuffer = Array(property.utf8)
       propertyBuffer.append(0)
 
@@ -44,16 +54,24 @@
           value.rawValue.withUTF8Buffer { valueBuffer in
             valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count)
             { valuePtr in
-              element_setStyleProperty(
-                elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePtr,
-                Int32(valueBuffer.count))
+              var priorityBuffer = Array(priority.utf8)
+              priorityBuffer.append(0)
+
+              priorityBuffer.withUnsafeBufferPointer { prioPtr in
+                prioPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: priorityBuffer.count)
+                { priorityPointer in
+                  element_setStyleProperty(
+                    elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePtr,
+                    Int32(valueBuffer.count), priorityPointer, Int32(priorityBuffer.count - 1))
+                }
+              }
             }
           }
         }
       }
     }
 
-    public func setProperty(_ property: String, _ value: StaticString) {
+    public func setProperty(_ property: String, _ value: StaticString, _ priority: String = "") {
       var propertyBuffer = Array(property.utf8)
       propertyBuffer.append(0)
 
@@ -63,16 +81,24 @@
           value.withUTF8Buffer { valueBuffer in
             valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count)
             { valuePtr in
-              element_setStyleProperty(
-                elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePtr,
-                Int32(valueBuffer.count))
+              var priorityBuffer = Array(priority.utf8)
+              priorityBuffer.append(0)
+
+              priorityBuffer.withUnsafeBufferPointer { prioPtr in
+                prioPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: priorityBuffer.count)
+                { priorityPointer in
+                  element_setStyleProperty(
+                    elementID, propertyPointer, Int32(propertyBuffer.count - 1), valuePtr,
+                    Int32(valueBuffer.count), priorityPointer, Int32(priorityBuffer.count - 1))
+                }
+              }
             }
           }
         }
       }
     }
 
-    public func setProperty(_ property: StaticString, _ value: String) {
+    public func setProperty(_ property: StaticString, _ value: String, _ priority: String = "") {
       property.withUTF8Buffer { propertyBuffer in
         propertyBuffer.baseAddress!.withMemoryRebound(
           to: CChar.self, capacity: propertyBuffer.count
@@ -83,16 +109,26 @@
           valueBuffer.withUnsafeBufferPointer { valPtr in
             valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count) {
               valuePtr in
-              element_setStyleProperty(
-                elementID, propertyPointer, Int32(propertyBuffer.count), valuePtr,
-                Int32(valueBuffer.count - 1))
+              var priorityBuffer = Array(priority.utf8)
+              priorityBuffer.append(0)
+
+              priorityBuffer.withUnsafeBufferPointer { prioPtr in
+                prioPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: priorityBuffer.count)
+                { priorityPointer in
+                  element_setStyleProperty(
+                    elementID, propertyPointer, Int32(propertyBuffer.count), valuePtr,
+                    Int32(valueBuffer.count - 1), priorityPointer, Int32(priorityBuffer.count - 1))
+                }
+              }
             }
           }
         }
       }
     }
 
-    public final func setProperty<T: CSSPropertyValue>(_ property: StaticString, _ value: T) {
+    public final func setProperty<T: CSSPropertyValue>(
+      _ property: StaticString, _ value: T, _ priority: String = ""
+    ) {
       property.withUTF8Buffer { propertyBuffer in
         propertyBuffer.baseAddress!.withMemoryRebound(
           to: CChar.self, capacity: propertyBuffer.count
@@ -100,16 +136,26 @@
           value.rawValue.withUTF8Buffer { valueBuffer in
             valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count)
             { valuePtr in
-              element_setStyleProperty(
-                elementID, propertyPointer, Int32(propertyBuffer.count), valuePtr,
-                Int32(valueBuffer.count))
+              var priorityBuffer = Array(priority.utf8)
+              priorityBuffer.append(0)
+
+              priorityBuffer.withUnsafeBufferPointer { prioPtr in
+                prioPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: priorityBuffer.count)
+                { priorityPointer in
+                  element_setStyleProperty(
+                    elementID, propertyPointer, Int32(propertyBuffer.count), valuePtr,
+                    Int32(valueBuffer.count), priorityPointer, Int32(priorityBuffer.count - 1))
+                }
+              }
             }
           }
         }
       }
     }
 
-    public func setProperty(_ property: StaticString, _ value: StaticString) {
+    public func setProperty(
+      _ property: StaticString, _ value: StaticString, _ priority: String = ""
+    ) {
       property.withUTF8Buffer { propertyBuffer in
         propertyBuffer.baseAddress!.withMemoryRebound(
           to: CChar.self, capacity: propertyBuffer.count
@@ -117,9 +163,17 @@
           value.withUTF8Buffer { valueBuffer in
             valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count)
             { valuePtr in
-              element_setStyleProperty(
-                elementID, propertyPointer, Int32(propertyBuffer.count), valuePtr,
-                Int32(valueBuffer.count))
+              var priorityBuffer = Array(priority.utf8)
+              priorityBuffer.append(0)
+
+              priorityBuffer.withUnsafeBufferPointer { prioPtr in
+                prioPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: priorityBuffer.count)
+                { priorityPointer in
+                  element_setStyleProperty(
+                    elementID, propertyPointer, Int32(propertyBuffer.count), valuePtr,
+                    Int32(valueBuffer.count), priorityPointer, Int32(priorityBuffer.count - 1))
+                }
+              }
             }
           }
         }
@@ -149,6 +203,15 @@
       }
     }
 
+    @_disfavoredOverload
+    public final func removeProperty(_ property: CSSPropertyName) {
+      removeProperty(property.rawValue)
+    }
+
+    public final func removeProperty<T>(_ property: CSSProperty<T>) {
+      removeProperty(property.name)
+    }
+
     open override func getPropertyValue(_ property: String) -> String {
       var propertyBuffer = Array(property.utf8)
       propertyBuffer.append(0)
@@ -167,22 +230,44 @@
       return String(decoding: resultBuffer[0..<Int(length)], as: UTF8.self)
     }
 
+    public func getPropertyValue(_ property: CSSPropertyName) -> String {
+      let bufferSize = 1024
+      var resultBuffer = [UInt8](repeating: 0, count: bufferSize)
+      let length = property.rawValue.withUTF8Buffer { propertyBuffer in
+        propertyBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propertyBuffer.count)
+        { propertyPointer in
+          element_getStyleProperty(
+            elementID, propertyPointer, Int32(propertyBuffer.count), &resultBuffer, Int32(bufferSize)
+          )
+        }
+      }
+      guard length > 0 else { return "" }
+      return String(decoding: resultBuffer[0..<Int(length)], as: UTF8.self)
+    }
+
     // MARK: - CSSPropertyName Overloads
 
+    @_disfavoredOverload
     public func setProperty(_ property: CSSPropertyName, _ value: String) {
       setProperty(property.rawValue, value)
     }
 
+    @_disfavoredOverload
     public func setProperty(_ property: CSSPropertyName, _ value: StaticString) {
       setProperty(property.rawValue, value)
     }
 
-    public func setProperty(_ property: CSSPropertyName, _ value: Double) {
-      setProperty(property.rawValue, doubleToString(value))
+    public func setProperty(_ property: CSSPropertyName, _ value: Int, _ priority: CSSPriority = .normal) {
+      setProperty(property.rawValue, intToString(value), priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSPropertyName, _ value: Int) {
-      setProperty(property.rawValue, intToString(value))
+    @_disfavoredOverload
+    public func setProperty(_ property: CSSPropertyName, _ value: String, _ priority: CSSPriority = .normal) {
+      setProperty(property.rawValue, value, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSPropertyName, _ value: CSSKeyword.Length, _ priority: CSSPriority = .normal) {
+      setProperty(property.rawValue, value.rawValue, priority.rawValue)
     }
 
     public func setProperty(_ property: CSSPropertyName, _ filters: CSSFilterFunction...) {
@@ -196,48 +281,135 @@
       setProperty(property.name.rawValue, value.value)
     }
 
-    public func setProperty(_ property: CSSProperty<Length>, _ value: Length) {
-      setProperty(property.name.rawValue, value.value)
+    public final func setProperty<T>(_ property: CSSProperty<T>, _ value: Length, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.value, priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<Percentage>, _ value: Percentage) {
-      setProperty(property.name.rawValue, value.value)
+    public final func setProperty<T>(_ property: CSSProperty<T>, _ value: Percentage, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.value, priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<LengthPercentage>, _ value: LengthPercentage) {
-      setProperty(property.name.rawValue, value.value)
+    public final func setProperty<T>(_ property: CSSProperty<T>, _ value: LengthPercentage, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.value, priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<Double>, _ value: Double) {
-      setProperty(property.name.rawValue, doubleToString(value))
+    public func setProperty(_ property: CSSProperty<Double>, _ value: Double, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, doubleToString(value), priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<Int>, _ value: Int) {
-      setProperty(property.name.rawValue, intToString(value))
+    public final func setProperty<T>(_ property: CSSProperty<T>, _ value: Int, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, intToString(value), priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<CSSDisplay>, _ value: CSSDisplay) {
-      setProperty(property.name.rawValue, value.rawValue)
+    public func setProperty(_ property: CSSProperty<CSSDisplay>, _ value: CSSDisplay, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<CSSVisibility>, _ value: CSSVisibility) {
-      setProperty(property.name.rawValue, value.rawValue)
+    public func setProperty(_ property: CSSProperty<CSSDisplay>, _ value: CSSDisplay.Outside, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<CSSPosition>, _ value: CSSPosition) {
-      setProperty(property.name.rawValue, value.rawValue)
+    public func setProperty(_ property: CSSProperty<CSSDisplay>, _ value: CSSDisplay.Inside, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<CSSCursor>, _ value: CSSCursor) {
-      setProperty(property.name.rawValue, value.value)
+    public func setProperty(_ property: CSSProperty<CSSDisplay>, _ value: CSSDisplay.Internal, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
     }
 
-    public func setProperty(_ property: CSSProperty<CSSPointerEvents>, _ value: CSSPointerEvents) {
-      setProperty(property.name.rawValue, value.rawValue)
+    public func setProperty(_ property: CSSProperty<CSSVisibility>, _ value: CSSVisibility, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSPosition>, _ value: CSSPosition, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSCursor>, _ value: CSSCursor, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.value, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSPointerEvents>, _ value: CSSPointerEvents, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
     }
 
     public func setProperty(_ property: CSSProperty<String>, _ value: String) {
       setProperty(property.name.rawValue, value)
+    }
+
+    public func setProperty(_ property: CSSProperty<String>, _ value: CSSTransformFunction) {
+      setProperty(property.name.rawValue, value.value)
+    }
+
+    public func setProperty(
+      _ property: CSSProperty<String>, _ value: (CSSPropertyName, CSSTime, CSSEasingFunction)
+    ) {
+      let stringValue = "\(value.0.rawValue) \(value.1.value) \(value.2.value)"
+      setProperty(property.name.rawValue, stringValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<String>, _ value: CSSKeyword.None) {
+      setProperty(property.name.rawValue, value.staticRawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<String>, _ value: CSSKeyword.None, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.staticRawValue, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<String>, _ value: CSSKeyword.Auto) {
+      setProperty(property.name.rawValue, value.staticRawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<String>, _ value: CSSKeyword.Auto, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.staticRawValue, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<String>, _ value: CSSKeyword.Global) {
+      setProperty(property.name.rawValue, value.staticRawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<String>, _ value: CSSKeyword.Global, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.staticRawValue, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSOverflow>, _ value: CSSOverflow, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, toString(value.staticRawValue), priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSTextOverflow>, _ value: CSSTextOverflow, _ priority: CSSPriority = .normal) {
+      if let staticRaw = value.staticRawValue {
+        setProperty(property.name.rawValue, toString(staticRaw), priority.rawValue)
+      } else {
+        setProperty(property.name.rawValue, value.value, priority.rawValue)
+      }
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSDisplay>, _ value: CSSDisplay.Legacy, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, toString(value.staticRawValue), priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSWhiteSpace>, _ value: CSSWhiteSpace, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, toString(value.staticRawValue), priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSVerticalAlign>, _ value: CSSVerticalAlign, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSAlignItems>, _ value: CSSAlignItems, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, toString(value.staticRawValue), priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSJustifyContent>, _ value: CSSJustifyContent, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, toString(value.staticRawValue), priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSProperty<CSSBorderCollapse>, _ value: CSSBorderCollapse, _ priority: CSSPriority = .normal) {
+      setProperty(property.name.rawValue, value.rawValue, priority.rawValue)
+    }
+
+    public func setProperty(_ property: CSSPropertyName, _ value: CSSKeyword.Auto, _ priority: CSSPriority = .normal) {
+      setProperty(property.rawValue, toString(value.rawValue), priority.rawValue)
     }
 
     public func filter(_ value: String) {
@@ -299,7 +471,18 @@
       setProperty("border-bottom", stringValue)
     }
 
+    @_disfavoredOverload
     public func margin(_ value: Length) {
+      setProperty("margin", value.value)
+    }
+
+    @_disfavoredOverload
+    public func margin(_ value: LengthPercentage) {
+      setProperty("margin", value.value)
+    }
+
+    @_disfavoredOverload
+    public func margin(_ value: Percentage) {
       setProperty("margin", value.value)
     }
 
@@ -313,17 +496,24 @@
       setProperty("margin", stringValue)
     }
 
-    public func padding(_ all: LengthPercentage) {
-      setProperty("padding", all.value)
+    @_disfavoredOverload
+    public func padding(_ value: Length) {
+      setProperty("padding", value.value)
+    }
+
+    @_disfavoredOverload
+    public func padding(_ value: LengthPercentage) {
+      setProperty("padding", value.value)
+    }
+
+    @_disfavoredOverload
+    public func padding(_ value: Percentage) {
+      setProperty("padding", value.value)
     }
 
     public func padding(_ vertical: LengthPercentage, _ horizontal: LengthPercentage) {
       let value = "\(vertical.value) \(horizontal.value)"
       setProperty("padding", value)
-    }
-
-    public func padding(_ all: Length) {
-      setProperty("padding", all.value)
     }
 
     public func padding(_ vertical: Length, _ horizontal: Length) {
@@ -345,11 +535,18 @@
 
     // MARK: - Dimension Properties
 
+    @_disfavoredOverload
     public func height(_ value: Length) {
       setProperty("height", value.value)
     }
 
+    @_disfavoredOverload
     public func height(_ value: LengthPercentage) {
+      setProperty("height", value.value)
+    }
+
+    @_disfavoredOverload
+    public func height(_ value: Percentage) {
       setProperty("height", value.value)
     }
 
@@ -413,7 +610,6 @@
 
     // MARK: - Box Model
 
-    @_disfavoredOverload
     public func boxSizing(_ value: CSSBoxSizing) {
       if let staticRawValue = value.staticRawValue {
         setProperty("box-sizing", staticRawValue)
@@ -425,6 +621,18 @@
     @_disfavoredOverload
     public func boxSizing(_ value: String) {
       setProperty("box-sizing", value)
+    }
+
+    public func backgroundClip(_ value: CSSBackgroundClip) {
+      if let staticRawValue = value.staticRawValue {
+        setProperty("background-clip", staticRawValue)
+      } else {
+        setProperty("background-clip", value.value)
+      }
+    }
+
+    public func backgroundClip(_ value: CSSKeyword.Global) {
+      setProperty("background-clip", value.staticRawValue)
     }
 
     // MARK: - Text Decoration
@@ -560,36 +768,127 @@
 
     // MARK: - Explicit Property Methods for Discovery
 
+    @_disfavoredOverload
     public func minHeight(_ value: Length) {
       setProperty("min-height", value.value)
     }
 
+    @_disfavoredOverload
     public func minHeight(_ value: LengthPercentage) {
       setProperty("min-height", value.value)
     }
 
+    @_disfavoredOverload
+    public func minHeight(_ value: Percentage) {
+      setProperty("min-height", value.value)
+    }
+
+    public func minHeight(_ value: CSSKeyword.Auto) {
+      setProperty("min-height", value.staticRawValue)
+    }
+
+    public func minHeight(_ value: CSSKeyword.Length) {
+      setProperty("min-height", value.rawValue)
+    }
+
+    @_disfavoredOverload
     public func maxHeight(_ value: Length) {
       setProperty("max-height", value.value)
     }
 
+    @_disfavoredOverload
     public func maxHeight(_ value: LengthPercentage) {
       setProperty("max-height", value.value)
     }
 
+    @_disfavoredOverload
+    public func maxHeight(_ value: Percentage) {
+      setProperty("max-height", value.value)
+    }
+
+    public func maxHeight(_ value: CSSKeyword.Auto) {
+      setProperty("max-height", value.staticRawValue)
+    }
+
+    public func maxHeight(_ value: CSSKeyword.None) {
+      setProperty("max-height", value.staticRawValue)
+    }
+
+    public func maxHeight(_ value: CSSKeyword.Length) {
+      setProperty("max-height", value.rawValue)
+    }
+
+    @_disfavoredOverload
     public func minWidth(_ value: Length) {
       setProperty("min-width", value.value)
     }
 
+    @_disfavoredOverload
     public func minWidth(_ value: LengthPercentage) {
       setProperty("min-width", value.value)
     }
 
+    @_disfavoredOverload
+    public func minWidth(_ value: Percentage) {
+      setProperty("min-width", value.value)
+    }
+
+    public func minWidth(_ value: CSSKeyword.Auto) {
+      setProperty("min-width", value.staticRawValue)
+    }
+
+    public func minWidth(_ value: CSSKeyword.Length) {
+      setProperty("min-width", value.rawValue)
+    }
+
+    @_disfavoredOverload
     public func maxWidth(_ value: Length) {
       setProperty("max-width", value.value)
     }
 
+    @_disfavoredOverload
     public func maxWidth(_ value: LengthPercentage) {
       setProperty("max-width", value.value)
+    }
+
+    @_disfavoredOverload
+    public func maxWidth(_ value: Percentage) {
+      setProperty("max-width", value.value)
+    }
+
+    public func maxWidth(_ value: CSSKeyword.Auto) {
+      setProperty("max-width", value.staticRawValue)
+    }
+
+    public func maxWidth(_ value: CSSKeyword.None) {
+      setProperty("max-width", value.staticRawValue)
+    }
+
+    public func maxWidth(_ value: CSSKeyword.Length) {
+      setProperty("max-width", value.rawValue)
+    }
+
+    @_disfavoredOverload
+    public func width(_ value: Length) {
+      setProperty("width", value.value)
+    }
+
+    @_disfavoredOverload
+    public func width(_ value: LengthPercentage) {
+      setProperty("width", value.value)
+    }
+
+    @_disfavoredOverload
+    public func width(_ value: Percentage) {
+      setProperty("width", value.value)
+    }
+
+    public func width(_ value: CSSKeyword.Auto) {
+      setProperty("width", value.staticRawValue)
+    }
+
+    public func width(_ value: CSSKeyword.Length) {
+      setProperty("width", value.rawValue)
     }
 
     public func borderRight(_ width: Length, _ style: CSSBorder.LineStyle, _ color: CSSColor) {
@@ -597,9 +896,34 @@
       setProperty("border-right", stringValue)
     }
 
+    public func borderInlineEnd(_ width: Length, _ style: CSSBorder.LineStyle, _ color: CSSColor) {
+      let stringValue = "\(width.value) \(style.value) \(color.value)"
+      setProperty("border-inline-end", stringValue)
+    }
+
     public func borderTop(_ width: Length, _ style: CSSBorder.LineStyle, _ color: CSSColor) {
       let stringValue = "\(width.value) \(style.value) \(color.value)"
       setProperty("border-top", stringValue)
+    }
+
+    public func borderWidth(_ value: Length) {
+      setProperty("border-width", value.value)
+    }
+
+    public func borderTopWidth(_ value: Length) {
+      setProperty("border-top-width", value.value)
+    }
+
+    public func borderBottomWidth(_ value: Length) {
+      setProperty("border-bottom-width", value.value)
+    }
+
+    public func borderLeftWidth(_ value: Length) {
+      setProperty("border-left-width", value.value)
+    }
+
+    public func borderRightWidth(_ value: Length) {
+      setProperty("border-right-width", value.value)
     }
 
     public func gap(_ value: Length) {
@@ -684,7 +1008,23 @@
       setProperty("padding-left", value.value)
     }
 
+    public func paddingLeft(_ value: LengthPercentage) {
+      setProperty("padding-left", value.value)
+    }
+
+    public func paddingLeft(_ value: Percentage) {
+      setProperty("padding-left", value.value)
+    }
+
     public func paddingRight(_ value: Length) {
+      setProperty("padding-right", value.value)
+    }
+
+    public func paddingRight(_ value: LengthPercentage) {
+      setProperty("padding-right", value.value)
+    }
+
+    public func paddingRight(_ value: Percentage) {
       setProperty("padding-right", value.value)
     }
 
@@ -692,7 +1032,23 @@
       setProperty("padding-top", value.value)
     }
 
+    public func paddingTop(_ value: LengthPercentage) {
+      setProperty("padding-top", value.value)
+    }
+
+    public func paddingTop(_ value: Percentage) {
+      setProperty("padding-top", value.value)
+    }
+
     public func paddingBottom(_ value: Length) {
+      setProperty("padding-bottom", value.value)
+    }
+
+    public func paddingBottom(_ value: LengthPercentage) {
+      setProperty("padding-bottom", value.value)
+    }
+
+    public func paddingBottom(_ value: Percentage) {
       setProperty("padding-bottom", value.value)
     }
 
@@ -700,7 +1056,23 @@
       setProperty("margin-left", value.value)
     }
 
+    public func marginLeft(_ value: LengthPercentage) {
+      setProperty("margin-left", value.value)
+    }
+
+    public func marginLeft(_ value: Percentage) {
+      setProperty("margin-left", value.value)
+    }
+
     public func marginRight(_ value: Length) {
+      setProperty("margin-right", value.value)
+    }
+
+    public func marginRight(_ value: LengthPercentage) {
+      setProperty("margin-right", value.value)
+    }
+
+    public func marginRight(_ value: Percentage) {
       setProperty("margin-right", value.value)
     }
 
@@ -708,7 +1080,23 @@
       setProperty("margin-top", value.value)
     }
 
+    public func marginTop(_ value: LengthPercentage) {
+      setProperty("margin-top", value.value)
+    }
+
+    public func marginTop(_ value: Percentage) {
+      setProperty("margin-top", value.value)
+    }
+
     public func marginBottom(_ value: Length) {
+      setProperty("margin-bottom", value.value)
+    }
+
+    public func marginBottom(_ value: LengthPercentage) {
+      setProperty("margin-bottom", value.value)
+    }
+
+    public func marginBottom(_ value: Percentage) {
       setProperty("margin-bottom", value.value)
     }
 
@@ -842,7 +1230,7 @@
                     valueCCharPtr in
                     element_setStyleProperty(
                       elementID, propCCharPtr, Int32(propBuffer.count), valueCCharPtr,
-                      Int32(valueBuffer.count))
+                      Int32(valueBuffer.count), nil, 0)
                   }
                 }
               }

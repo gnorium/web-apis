@@ -65,41 +65,32 @@
 
     @discardableResult
     public func addEventListener(
-      _ event: StaticString, _ handler: @escaping @Sendable (Event) -> Void
-    ) -> Self {
+      _ event: StaticString,
+      _ handler: @escaping @Sendable (Event) -> Void,
+      capture: Bool
+    ) -> Int32 {
       let callbackID = CallbackRegistry.register { payload in
         handler(Event(payload: payload))
       }
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          element_addEventListener(id, pointer, Int32(buffer.count), Int32(callbackID))
+          element_addEventListener(id, pointer, Int32(buffer.count), Int32(callbackID), capture ? 1 : 0)
         }
       }
-      return self
+      return Int32(callbackID)
     }
 
-    @discardableResult
-    public func addEventListener(
-      _ event: Event.`Type`, _ handler: @escaping @Sendable (Event) -> Void
-    ) -> Self {
-      let callbackID = CallbackRegistry.register { payload in
-        handler(Event(payload: payload))
-      }
-      let eventStr = event.staticString
-      eventStr.withUTF8Buffer { buffer in
-        buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          element_addEventListener(id, pointer, Int32(buffer.count), Int32(callbackID))
-        }
-      }
-      return self
-    }
-
-    public func removeEventListener(_ event: StaticString) {
+    public func removeEventListener(_ event: StaticString, _ callbackID: Int32) {
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          element_removeEventListener(id, pointer, Int32(buffer.count))
+          element_removeEventListener(id, pointer, Int32(buffer.count), callbackID)
         }
       }
+      CallbackRegistry.unregister(callbackID)
+    }
+
+    public func removeEventListener(_ type: Event.`Type`, _ callbackID: Int32) {
+      self.removeEventListener(type.staticString, callbackID)
     }
 
     public func dispatchEvent(_ event: StaticString) {
@@ -283,12 +274,12 @@
 
   @_extern(wasm, module: "env", name: "element_addEventListener")
   func element_addEventListener(
-    _ elementID: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32
+    _ elementID: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32, _ capture: Int32
   )
 
   @_extern(wasm, module: "env", name: "element_removeEventListener")
   func element_removeEventListener(
-    _ elementID: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
+    _ elementID: Int32, _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
 
   @_extern(wasm, module: "env", name: "element_dispatchEvent")
   func element_dispatchEvent(
@@ -348,7 +339,8 @@
   @_extern(wasm, module: "env", name: "element_setStyleProperty")
   func element_setStyleProperty(
     _ elementID: Int32, _ propPointer: UnsafePointer<CChar>, _ propLen: Int32,
-    _ valPointer: UnsafePointer<CChar>, _ valLen: Int32)
+    _ valPointer: UnsafePointer<CChar>, _ valLen: Int32, _ priorityPointer: UnsafePointer<CChar>?,
+    _ priorityLen: Int32)
 
   @_extern(wasm, module: "env", name: "element_removeStyleProperty")
   func element_removeStyleProperty(

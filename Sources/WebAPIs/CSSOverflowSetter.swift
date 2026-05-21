@@ -46,7 +46,9 @@
                 propPtr,
                 Int32(propBuff.count),
                 valCCharPtr,
-                Int32(valBuff.count - 1)
+                Int32(valBuff.count - 1),
+                nil,
+                0
               )
             }
           }
@@ -66,7 +68,9 @@
                 propPtr,
                 Int32(propBuff.count),
                 valPtr,
-                Int32(valBuff.count)
+                Int32(valBuff.count),
+                nil,
+                0
               )
             }
           }

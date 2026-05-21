@@ -41,7 +41,9 @@
                 propPtr,
                 Int32(propBuff.count),
                 valCCharPtr,
-                Int32(valBuff.count - 1)
+                Int32(valBuff.count - 1),
+                nil,
+                0
               )
             }
           }
@@ -57,7 +59,7 @@
             valueBuffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valueBuffer.count)
             { valuePtr in
               element_setStyleProperty(
-                elementID, propPointer, Int32(propBuffer.count), valuePtr, Int32(valueBuffer.count))
+                elementID, propPointer, Int32(propBuffer.count), valuePtr, Int32(valueBuffer.count), nil, 0)
             }
           }
         }

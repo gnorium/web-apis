@@ -4,64 +4,6 @@
   import WebTypes
 
   public struct Window: Sendable {
-    public final class Location: @unchecked Sendable {
-      public var href: String {
-        get {
-          let bufferSize = 1024 * 4
-          let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-          defer { buffer.deallocate() }
-          let len = window_getLocationHref(buffer, Int32(bufferSize))
-          if len > 0 {
-            let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map {
-              UInt8(bitPattern: $0)
-            }
-            return String(decoding: bytes, as: UTF8.self)
-          }
-          return ""
-        }
-        set {
-          var buffer = Array(newValue.utf8)
-          buffer.append(0)
-
-          buffer.withUnsafeBufferPointer { ptr in
-            ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-              window_setLocationHref(pointer, Int32(buffer.count - 1))
-            }
-          }
-        }
-      }
-
-      public var pathname: String {
-        let bufferSize = 1024
-        let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-        defer { buffer.deallocate() }
-        let len = window_getLocationPathname(buffer, Int32(bufferSize))
-        if len > 0 {
-          let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map {
-            UInt8(bitPattern: $0)
-          }
-          return String(decoding: bytes, as: UTF8.self)
-        }
-        return ""
-      }
-
-      public var search: String {
-        let bufferSize = 1024 * 4
-        let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
-        defer { buffer.deallocate() }
-        let len = window_getLocationSearch(buffer, Int32(bufferSize))
-        if len > 0 {
-          let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map {
-            UInt8(bitPattern: $0)
-          }
-          return String(decoding: bytes, as: UTF8.self)
-        }
-        return ""
-      }
-
-      public init() {}
-    }
-
     public func matchMedia(_ query: MediaQueryList) -> Bool {
       return query.withCString { pointer, len in
         let result = window_matchMedia(pointer, len)
@@ -151,32 +93,32 @@
 
     @discardableResult
     public func addEventListener(
-      _ event: StaticString, _ handler: @escaping @Sendable (Event) -> Void
-    ) -> Window {
+      _ event: StaticString,
+      _ handler: @escaping @Sendable (Event) -> Void,
+      capture: Bool
+    ) -> Int32 {
       let callbackID = CallbackRegistry.register { payload in
         handler(Event(payload: payload))
       }
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          window_addEventListener(pointer, Int32(buffer.count), Int32(callbackID))
+          window_addEventListener(pointer, Int32(buffer.count), Int32(callbackID), capture ? 1 : 0)
         }
       }
-      return self
+      return Int32(callbackID)
     }
 
-    @discardableResult
-    public func addEventListener(
-      _ event: Event.`Type`, _ handler: @escaping @Sendable (Event) -> Void
-    ) -> Window {
-      return addEventListener(event.staticString, handler)
-    }
-
-    public func removeEventListener(_ event: StaticString) {
+    public func removeEventListener(_ event: StaticString, _ callbackID: Int32) {
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          window_removeEventListener(pointer, Int32(buffer.count))
+          window_removeEventListener(pointer, Int32(buffer.count), callbackID)
         }
       }
+      CallbackRegistry.unregister(callbackID)
+    }
+
+    public func removeEventListener(_ event: Event.`Type`, _ callbackID: Int32) {
+      removeEventListener(event.staticString, callbackID)
     }
 
     public func dispatchEvent(_ event: StaticString) {
@@ -190,52 +132,6 @@
     public func dispatchEvent(_ event: CustomEvent) {
       window_dispatchCustomEvent(event.pointer)
     }
-  }
-
-  extension Window {
-    @discardableResult
-    public func requestAnimationFrame(_ callback: @escaping @Sendable () -> Void) -> Int32 {
-      let callbackID = CallbackRegistry.register { _ in
-        callback()
-      }
-      return window_requestAnimationFrame(Int32(callbackID))
-    }
-
-    public func cancelAnimationFrame(_ id: Int32) {
-      window_cancelAnimationFrame(id)
-    }
-
-    @discardableResult
-    public func setTimeout(_ ms: Double, _ callback: @escaping @Sendable () -> Void) -> Int32 {
-      let callbackID = CallbackRegistry.register { _ in
-        callback()
-      }
-      return window_setTimeout(ms, Int32(callbackID))
-    }
-
-    public func clearTimeout(_ timerID: Int32) {
-      window_clearTimeout(timerID)
-    }
-
-    /// Standard scrollTo API - scrolls to specified coordinates
-    /// - Parameters:
-    ///   - x: X coordinate to scroll to
-    ///   - y: Y coordinate to scroll to
-    ///   - behavior: 0 for auto (default), 1 for smooth
-    public func scrollTo(_ x: Double, _ y: Double, behavior: ScrollBehavior = .auto) {
-      window_scrollTo(x, y, Int32(behavior.rawValue))
-    }
-
-    public func replaceURL(_ url: String) {
-      var buffer = Array(url.utf8)
-      buffer.append(0)
-      buffer.withUnsafeBufferPointer { ptr in
-        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          history_replaceURL(pointer, Int32(buffer.count - 1))
-        }
-      }
-    }
-
     public var location: Location {
       Location()
     }
@@ -304,89 +200,58 @@
         }
       }
     }
+
+    @discardableResult
+    public func requestAnimationFrame(_ callback: @escaping @Sendable () -> Void) -> Int32 {
+      let callbackID = CallbackRegistry.register { _ in
+        callback()
+      }
+      return window_requestAnimationFrame(Int32(callbackID))
+    }
+
+    public func cancelAnimationFrame(_ id: Int32) {
+      window_cancelAnimationFrame(id)
+    }
+
+    @discardableResult
+    public func setTimeout(_ ms: Double, _ callback: @escaping @Sendable () -> Void) -> Int32 {
+      let callbackID = CallbackRegistry.register { _ in
+        callback()
+      }
+      return window_setTimeout(ms, Int32(callbackID))
+    }
+
+    public func clearTimeout(_ timerID: Int32) {
+      window_clearTimeout(timerID)
+    }
+
+    /// Standard scrollTo API - scrolls to specified coordinates
+    /// - Parameters:
+    ///   - x: X coordinate to scroll to
+    ///   - y: Y coordinate to scroll to
+    ///   - behavior: 0 for auto (default), 1 for smooth
+    public func scrollTo(_ x: Double, _ y: Double, behavior: ScrollBehavior = .auto) {
+      window_scrollTo(x, y, Int32(behavior.rawValue))
+    }
+
+    public func replaceURL(_ url: String) {
+      var buffer = Array(url.utf8)
+      buffer.append(0)
+      buffer.withUnsafeBufferPointer { ptr in
+        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          history_replaceURL(pointer, Int32(buffer.count - 1))
+        }
+      }
+    }
   }
 
   public struct FetchResponse: Sendable {
-    let jsonString: String
+    public let jsonString: String
 
     public func text() -> String {
       jsonString
     }
   }
-
-  // MARK: - EventSource (SSE) Support
-
-  /// A wrapper for EventSource (Server-Sent Events)
-  public final class EventSource: @unchecked Sendable {
-    private let sseID: Int32
-    private var isClosed = false
-
-    /// Create an EventSource connection to the given URL
-    /// - Parameters:
-    ///   - url: The SSE endpoint URL
-    ///   - onStart: Called when the 'start' event is received
-    ///   - onChunk: Called when a 'chunk' event is received
-    ///   - onDone: Called when the 'done' event is received
-    ///   - onError: Called when an error occurs
-    public init(
-      url: String,
-      onStart: @escaping @Sendable (String) -> Void,
-      onChunk: @escaping @Sendable (String) -> Void,
-      onDone: @escaping @Sendable (String) -> Void,
-      onError: @escaping @Sendable (String) -> Void
-    ) {
-      let startCallbackID = CallbackRegistry.register { data in
-        onStart(data.toString())
-      }
-      let chunkCallbackID = CallbackRegistry.register { data in
-        onChunk(data.toString())
-      }
-      let doneCallbackID = CallbackRegistry.register { data in
-        onDone(data.toString())
-      }
-      let errorCallbackID = CallbackRegistry.register { data in
-        onError(data.toString())
-      }
-
-      var urlBuffer = Array(url.utf8)
-      urlBuffer.append(0)
-
-      self.sseID = urlBuffer.withUnsafeBufferPointer { ptr in
-        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { pointer in
-          sse_create(
-            pointer, Int32(urlBuffer.count - 1),
-            Int32(startCallbackID),
-            Int32(chunkCallbackID),
-            Int32(doneCallbackID),
-            Int32(errorCallbackID)
-          )
-        }
-      }
-    }
-
-    /// Close the EventSource connection
-    public func close() {
-      guard !isClosed else { return }
-      isClosed = true
-      sse_close(sseID)
-    }
-
-    deinit {
-      close()
-    }
-  }
-
-  @_extern(wasm, module: "env", name: "sse_create")
-  func sse_create(
-    _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32,
-    _ startCallbackID: Int32,
-    _ chunkCallbackID: Int32,
-    _ doneCallbackID: Int32,
-    _ errorCallbackID: Int32
-  ) -> Int32
-
-  @_extern(wasm, module: "env", name: "sse_close")
-  func sse_close(_ sseID: Int32)
 
   public let window = Window()
 
@@ -413,7 +278,7 @@
 
   @_extern(wasm, module: "env", name: "window_addEventListener")
   func window_addEventListener(
-    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
+    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32, _ capture: Int32)
 
   @_extern(wasm, module: "env", name: "window_requestAnimationFrame")
   func window_requestAnimationFrame(_ callbackID: Int32) -> Int32
@@ -467,7 +332,7 @@
   public func canvas_toBlob(_ canvasID: Int32, _ callbackID: Int32)
 
   @_extern(wasm, module: "env", name: "window_removeEventListener")
-  func window_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
+  func window_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
 
   @_extern(wasm, module: "env", name: "window_dispatchEvent_by_name")
   func window_dispatchEvent_by_name(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)

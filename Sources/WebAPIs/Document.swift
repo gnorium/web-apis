@@ -107,6 +107,13 @@
       return createElement(tag.value)
     }
 
+    public func createElementNS(_ namespace: String, _ tag: TagName) -> Element {
+      return tag.value.withUTF8Buffer { buffer in
+        let tagStr = String(decoding: buffer, as: UTF8.self)
+        return createElementNS(namespace, tagStr)
+      }
+    }
+
     public var body: Element {
       querySelector("body")!
     }
@@ -137,32 +144,28 @@
   extension Document: EventTargeting {
     @discardableResult
     public func addEventListener(
-      _ event: StaticString, _ handler: @escaping @Sendable (Event) -> Void
-    ) -> Document {
+      _ event: StaticString,
+      _ handler: @escaping @Sendable (Event) -> Void,
+      capture: Bool
+    ) -> Int32 {
       let callbackID = CallbackRegistry.register { payload in
         handler(Event(payload: payload))
       }
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          document_addEventListener(pointer, Int32(buffer.count), Int32(callbackID))
+          document_addEventListener(pointer, Int32(buffer.count), Int32(callbackID), capture ? 1 : 0)
         }
       }
-      return self
+      return Int32(callbackID)
     }
 
-    @discardableResult
-    public func addEventListener(
-      _ event: Event.`Type`, _ handler: @escaping @Sendable (Event) -> Void
-    ) -> Document {
-      return addEventListener(event.staticString, handler)
-    }
-
-    public func removeEventListener(_ event: StaticString) {
+    public func removeEventListener(_ event: StaticString, _ callbackID: Int32) {
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          document_removeEventListener(pointer, Int32(buffer.count))
+          document_removeEventListener(pointer, Int32(buffer.count), callbackID)
         }
       }
+      CallbackRegistry.unregister(callbackID)
     }
 
     public func dispatchEvent(_ event: StaticString) {
@@ -178,17 +181,15 @@
     }
 
     public func on(_ event: StaticString, _ handler: @escaping @Sendable (Event) -> Void)
-      -> Document
+      -> Int32
     {
-      addEventListener(event, handler)
-      return self
+      return addEventListener(event, handler)
     }
 
     public func on(_ event: Event.`Type`, _ handler: @escaping @Sendable (Event) -> Void)
-      -> Document
+      -> Int32
     {
-      addEventListener(event.staticString, handler)
-      return self
+      return addEventListener(event.staticString, handler)
     }
   }
 
@@ -196,10 +197,10 @@
 
   @_extern(wasm, module: "env", name: "document_addEventListener")
   func document_addEventListener(
-    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
+    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32, _ capture: Int32)
 
   @_extern(wasm, module: "env", name: "document_removeEventListener")
-  func document_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
+  func document_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
 
   @_extern(wasm, module: "env", name: "document_dispatchEvent")
   func document_dispatchEvent(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32)
