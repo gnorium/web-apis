@@ -251,6 +251,40 @@
       get { getAttribute(.id) ?? "" }
       set { setAttribute(.id, newValue) }
     }
+
+    public func getComputedTextLength() -> Double {
+      element_getComputedTextLength(id)
+    }
+
+    public func appendChild(_ child: Element) {
+      element_appendChild(id, child.id)
+    }
+
+    public func setInnerHTML(_ html: String) {
+      var buffer = Array(html.utf8)
+      buffer.append(0)
+      buffer.withUnsafeBufferPointer { ptr in
+        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          element_setInnerHTML(id, pointer, Int32(buffer.count - 1))
+        }
+      }
+    }
+
+    public func setStyleProperty(_ property: String, _ value: String) {
+      var propBuf = Array(property.utf8)
+      propBuf.append(0)
+      var valBuf = Array(value.utf8)
+      valBuf.append(0)
+      propBuf.withUnsafeBufferPointer { pptr in
+        valBuf.withUnsafeBufferPointer { vptr in
+          pptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: propBuf.count) { propPtr in
+            vptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valBuf.count) { valPtr in
+              element_setStyleProperty(id, propPtr, Int32(propBuf.count - 1), valPtr, Int32(valBuf.count - 1), nil, 0)
+            }
+          }
+        }
+      }
+    }
   }
 
   @_extern(wasm, module: "env", name: "element_getTextContent")
@@ -362,4 +396,10 @@
   @_extern(wasm, module: "env", name: "element_toggleClass")
   func element_toggleClass(
     _ elementID: Int32, _ classPointer: UnsafePointer<CChar>, _ classLen: Int32)
+
+  @_extern(wasm, module: "env", name: "element_getComputedTextLength")
+  func element_getComputedTextLength(_ elementID: Int32) -> Double
+
+  @_extern(wasm, module: "env", name: "element_appendChild")
+  func element_appendChild(_ parentID: Int32, _ childID: Int32)
 #endif

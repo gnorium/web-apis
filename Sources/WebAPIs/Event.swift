@@ -24,6 +24,7 @@
       case resize = "resize"
       case load = "load"
       case unload = "unload"
+      case wheel = "wheel"
       case transitionend = "transitionend"
       case toggle = "toggle"
       case touchstart = "touchstart"
@@ -55,6 +56,7 @@
         case .resize: return "resize"
         case .load: return "load"
         case .unload: return "unload"
+        case .wheel: return "wheel"
         case .transitionend: return "transitionend"
         case .toggle: return "toggle"
         case .touchstart: return "touchstart"
@@ -136,6 +138,7 @@
       case resize
       case load
       case unload
+      case wheel
       case transitionend
       case toggle
       case touchstart
@@ -167,6 +170,7 @@
         case .resize: return "resize"
         case .load: return "load"
         case .unload: return "unload"
+        case .wheel: return "wheel"
         case .transitionend: return "transitionend"
         case .toggle: return "toggle"
         case .touchstart: return "touchstart"
@@ -262,6 +266,7 @@
         case .resize: return "resize"
         case .load: return "load"
         case .unload: return "unload"
+        case .wheel: return "wheel"
         case .transitionend: return "transitionend"
         case .toggle: return "toggle"
         case .touchstart: return "touchstart"
@@ -371,6 +376,10 @@
       event_clientY(payload.ptr, Int32(payload.len))
     }
 
+    public var deltaY: Double {
+      event_deltaY(payload.ptr, Int32(payload.len))
+    }
+
     public var button: Int {
       Int(event_button(payload.ptr, Int32(payload.len)))
     }
@@ -416,4 +425,7 @@
 
   @_extern(wasm, module: "env", name: "event_button")
   func event_button(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_deltaY")
+  func event_deltaY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
 #endif

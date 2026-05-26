@@ -73,10 +73,13 @@
       event_clientY(ptr, Int32(len))
     }
 
+    public var deltaY: Double {
+      event_deltaY(ptr, Int32(len))
+    }
+
     public var relatedTarget: Element? {
       let targetID = event_relatedTarget(ptr, Int32(len))
       return targetID >= 0 ? Element(id: targetID) : nil
     }
   }
-
 #endif

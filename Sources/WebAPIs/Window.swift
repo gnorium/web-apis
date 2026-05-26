@@ -84,6 +84,9 @@
 
     public let performance = Performance()
     public let navigator = Navigator()
+    public var devicePixelRatio: Double {
+      window_devicePixelRatio()
+    }
   }
 
   extension Window: EventTargeting {
@@ -330,6 +333,9 @@
 
   @_extern(wasm, module: "env", name: "canvas_toBlob")
   public func canvas_toBlob(_ canvasID: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "window_devicePixelRatio")
+  func window_devicePixelRatio() -> Double
 
   @_extern(wasm, module: "env", name: "window_removeEventListener")
   func window_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
