@@ -1,7 +1,7 @@
 #if CLIENT
   import WebTypes
 
-  extension CSSDisplay.Outside: CSSPropertyValue {
+  extension CSS.Display.Outside: CSSPropertyValue {
     public var rawValue: StaticString {
       switch self {
       case .block: return "block"
@@ -10,7 +10,7 @@
     }
   }
 
-  extension CSSDisplay.Box: CSSPropertyValue {
+  extension CSS.Display.Box: CSSPropertyValue {
     public var rawValue: StaticString {
       switch self {
       case .contents: return "contents"
@@ -18,7 +18,7 @@
     }
   }
 
-  extension CSSDisplay.Inside: CSSPropertyValue {
+  extension CSS.Display.Inside: CSSPropertyValue {
     public var rawValue: StaticString {
       switch self {
       case .flow: return "flow"
@@ -31,7 +31,7 @@
     }
   }
 
-  extension CSSDisplay.ListItem: CSSPropertyValue {
+  extension CSS.Display.ListItem: CSSPropertyValue {
     public var rawValue: StaticString {
       switch self {
       case .listItem: return "list-item"
@@ -39,7 +39,7 @@
     }
   }
 
-  extension CSSDisplay.Legacy: CSSPropertyValue {
+  extension CSS.Display.Legacy: CSSPropertyValue {
     public var rawValue: StaticString {
       switch self {
       case .inlineBlock: return "inline-block"

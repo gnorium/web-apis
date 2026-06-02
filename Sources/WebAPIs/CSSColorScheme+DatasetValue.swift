@@ -1,7 +1,7 @@
 #if CLIENT
   import WebTypes
 
-  extension CSSColorScheme: DatasetValue {
+  extension CSS.ColorScheme: DatasetValue {
     public var rawValue: StaticString {
       staticRawValue
     }

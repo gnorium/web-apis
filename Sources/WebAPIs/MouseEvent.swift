@@ -13,11 +13,11 @@
       self.event = event.payload
     }
 
-    public var target: Element? {
+    public var target: DOM.Element? {
       event.target
     }
 
-    public var relatedTarget: Element? {
+    public var relatedTarget: DOM.Element? {
       event.relatedTarget
     }
 

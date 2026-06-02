@@ -363,7 +363,7 @@
       return ""
     }
 
-    public var target: Element? {
+    public var target: DOM.Element? {
       let id = event_target(payload.ptr, Int32(payload.len))
       return id >= 0 ? ElementFactory.create(id: id) : nil
     }

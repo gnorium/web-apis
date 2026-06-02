@@ -5,7 +5,7 @@
   import HTMLBuilder
   import WebTypes
 
-  extension Element: EventTargeting {
+  extension DOM.Element: EventTargeting {
     public var style: CSSStyleProperties {
       return CSSStyleProperties(elementID: id)
     }
@@ -35,7 +35,7 @@
       }
     }
 
-    public func querySelector(_ selector: String) -> Element? {
+    public func querySelector(_ selector: String) -> DOM.Element? {
       var buffer = Array(selector.utf8)
       buffer.append(0)
       return buffer.withUnsafeBufferPointer { bufferPtr in
@@ -47,7 +47,7 @@
       }
     }
 
-    public func querySelectorAll(_ selector: String) -> [Element] {
+    public func querySelectorAll(_ selector: String) -> [DOM.Element] {
       var buffer = Array(selector.utf8)
       buffer.append(0)
       return buffer.withUnsafeBufferPointer { bufferPtr in
@@ -121,7 +121,7 @@
       element_blur(id)
     }
 
-    public func scrollIntoView(_ options: DOMScrollIntoViewOptions? = nil) {
+    public func scrollIntoView(_ options: CSSOM.ScrollIntoViewOptions? = nil) {
       if let options = options {
         var behaviorBuffer = Array(options.behavior.utf8)
         behaviorBuffer.append(0)
@@ -151,12 +151,12 @@
       }
     }
 
-    public func getBoundingClientRect() -> DOMRect? {
+    public func getBoundingClientRect() -> DOM.Rect? {
       let buffer = UnsafeMutablePointer<Double>.allocate(capacity: 8)
       defer { buffer.deallocate() }
       let success = element_getBoundingClientRect(id, buffer)
       if success != 0 {
-        return DOMRect(
+        return DOM.Rect(
           x: buffer[0], y: buffer[1], width: buffer[2], height: buffer[3],
           top: buffer[4], right: buffer[5], bottom: buffer[6], left: buffer[7]
         )
@@ -164,7 +164,7 @@
       return nil
     }
 
-    public func closest(_ selector: String) -> Element? {
+    public func closest(_ selector: String) -> DOM.Element? {
       var buffer = Array(selector.utf8)
       buffer.append(0)
       return buffer.withUnsafeBufferPointer { bufferPtr in
@@ -176,12 +176,12 @@
       }
     }
 
-    public func cloneNode(deep: Bool) -> Element {
+    public func cloneNode(deep: Bool) -> DOM.Element {
       let newID = element_cloneNode(id, deep ? 1 : 0)
       return ElementFactory.create(id: newID)
     }
 
-    public var firstElementChild: Element? {
+    public var firstElementChild: DOM.Element? {
       let resultID = element_firstElementChild(id)
       return resultID >= 0 ? ElementFactory.create(id: resultID) : nil
     }
@@ -192,37 +192,37 @@
     }
 
     @discardableResult
-    public func setAttribute(_ name: HTMLAttributeName, _ value: ARIALive) -> Self {
+    public func setAttribute(_ name: HTMLAttributeName, _ value: ARIA.Live) -> Self {
       return setAttribute(name.rawValue, value.rawValue)
     }
 
     @discardableResult
-    public func setAttribute(_ name: HTMLAttributeName, _ value: ARIARole) -> Self {
+    public func setAttribute(_ name: HTMLAttributeName, _ value: ARIA.Role) -> Self {
       return setAttribute(name.rawValue, value.rawValue)
     }
 
     @discardableResult
-    public func setAttribute(_ name: HTMLAttributeName, _ value: HTMLButton.`Type`) -> Self {
+    public func setAttribute(_ name: HTMLAttributeName, _ value: HTML.Button.`Type`) -> Self {
       return setAttribute(name.rawValue, value.rawValue)
     }
 
     @discardableResult
-    public func setAttribute(_ name: HTMLAttributeName, _ value: HTMLInput.`Type`) -> Self {
+    public func setAttribute(_ name: HTMLAttributeName, _ value: HTML.Input.`Type`) -> Self {
       return setAttribute(name.rawValue, value.rawValue)
     }
 
     @discardableResult
-    public func setAttribute(_ name: HTMLAttributeName, _ value: HTMLInput.Autocomplete) -> Self {
+    public func setAttribute(_ name: HTMLAttributeName, _ value: HTML.Input.Autocomplete) -> Self {
       return setAttribute(name.rawValue, value.rawValue)
     }
 
     @discardableResult
-    public func setAttribute(_ name: HTMLAttributeName, _ value: CSSKeyword.Global) -> Self {
+    public func setAttribute(_ name: HTMLAttributeName, _ value: CSS.Keyword.Global) -> Self {
       return setAttribute(name.rawValue, toString(value.staticRawValue))
     }
 
     @discardableResult
-    public func setAttribute(_ name: HTMLAttributeName, _ value: CSSKeyword.None) -> Self {
+    public func setAttribute(_ name: HTMLAttributeName, _ value: CSS.Keyword.None) -> Self {
       return setAttribute(name.rawValue, toString(value.staticRawValue))
     }
 
@@ -256,7 +256,7 @@
       element_getComputedTextLength(id)
     }
 
-    public func appendChild(_ child: Element) {
+    public func appendChild(_ child: DOM.Element) {
       element_appendChild(id, child.id)
     }
 

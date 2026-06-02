@@ -7,22 +7,22 @@
     let elementID: Int32
 
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSOverflow]) {
+    public func dynamicallyCall(withArguments args: [CSS.Overflow]) {
       guard let value = args.first else { return }
       setProperty("overflow", value.rawValue)
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.None]) {
       guard let value = args.first else { return }
       setProperty("overflow", value.staticRawValue)
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Auto]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Auto]) {
       guard let value = args.first else { return }
       setProperty("overflow", value.staticRawValue)
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
       setProperty("overflow", value.staticRawValue)
     }

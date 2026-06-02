@@ -1,3 +1,4 @@
+import WebTypes
 #if CLIENT
   import DOMBuilder
   import EmbeddedSwiftUtilities
@@ -5,10 +6,10 @@
   public struct DOMTokenList: Sendable {
     let elementID: Int32
 
-    private var element: Element { Element(id: elementID) }
+    private var element: DOM.Element { DOM.Element(id: elementID) }
 
     @discardableResult
-    public func add(_ className: String) -> Element {
+    public func add(_ className: String) -> DOM.Element {
       var buffer = Array(className.utf8)
       buffer.append(0)
 
@@ -21,7 +22,7 @@
     }
 
     @discardableResult
-    public func remove(_ className: String) -> Element {
+    public func remove(_ className: String) -> DOM.Element {
       var buffer = Array(className.utf8)
       buffer.append(0)
 
@@ -34,7 +35,7 @@
     }
 
     @discardableResult
-    public func toggle(_ className: String) -> Element {
+    public func toggle(_ className: String) -> DOM.Element {
       var buffer = Array(className.utf8)
       buffer.append(0)
 

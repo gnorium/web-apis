@@ -1,3 +1,4 @@
+import WebTypes
 #if CLIENT
   import DOMBuilder
 
@@ -10,7 +11,7 @@
   /// ```
   public struct QRCode {
     @discardableResult
-    public init(_ element: Element, text: String, width: Int32 = 200, height: Int32 = 200) {
+    public init(_ element: DOM.Element, text: String, width: Int32 = 200, height: Int32 = 200) {
       let len = Int32(text.utf8.count)
       text.withCString { ptr in
         qrcode_init(element.id, ptr, len, width, height)

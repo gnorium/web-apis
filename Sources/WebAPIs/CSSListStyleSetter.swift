@@ -7,17 +7,17 @@
     let elementID: Int32
 
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSListStyle]) {
+    public func dynamicallyCall(withArguments args: [CSS.ListStyle]) {
       guard let value = args.first else { return }
       setProperty("list-style", value.staticRawValue)
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.None]) {
       guard let value = args.first else { return }
       setProperty("list-style", value.staticRawValue)
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
       setProperty("list-style", value.staticRawValue)
     }

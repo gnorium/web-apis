@@ -1,7 +1,7 @@
 #if CLIENT
   import WebTypes
 
-  extension CSSKeyword.None: CSSPropertyValue {
+  extension CSS.Keyword.None: CSSPropertyValue {
     public var rawValue: StaticString {
       switch self {
       case .none: return "none"
@@ -9,7 +9,7 @@
     }
   }
 
-  extension CSSKeyword.Auto: CSSPropertyValue {
+  extension CSS.Keyword.Auto: CSSPropertyValue {
     public var rawValue: StaticString {
       switch self {
       case .auto: return "auto"
@@ -17,7 +17,7 @@
     }
   }
 
-  extension CSSKeyword.Global: CSSPropertyValue {
+  extension CSS.Keyword.Global: CSSPropertyValue {
     public var rawValue: StaticString {
       switch self {
       case .inherit: return "inherit"

@@ -30,47 +30,47 @@
       }
     }
 
-    // Concrete overload for CSSColorScheme
+    // Concrete overload for CSS.ColorScheme
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSColorScheme]) {
+    public func dynamicallyCall(withArguments args: [CSS.ColorScheme]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
 
-    // Concrete overload for CSSVisibility
+    // Concrete overload for CSS.Visibility
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSVisibility]) {
+    public func dynamicallyCall(withArguments args: [CSS.Visibility]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
 
-    // Concrete overload for CSSSingleAnimationPlayState
+    // Concrete overload for CSS.SingleAnimationPlayState
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSSingleAnimationPlayState]) {
+    public func dynamicallyCall(withArguments args: [CSS.SingleAnimationPlayState]) {
       guard let value = args.first else { return }
       setPropertyValue(value.rawValue)
     }
 
-    // Concrete overload for CSSKeyword.Global
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+    // Concrete overload for CSS.Keyword.Global
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
 
-    // Concrete overload for CSSKeyword.None
-    public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
+    // Concrete overload for CSS.Keyword.None
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.None]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
 
-    // Concrete overload for CSSKeyword.Auto
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Auto]) {
+    // Concrete overload for CSS.Keyword.Auto
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Auto]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
 
-    // Concrete overload for CSSKeyword.All
-    public func dynamicallyCall(withArguments args: [CSSKeyword.All]) {
+    // Concrete overload for CSS.Keyword.All
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.All]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
@@ -103,8 +103,8 @@
       setPropertyValue(stringValue)
     }
 
-    // Concrete overload for Length (single or multiple values)
-    public func dynamicallyCall(withArguments args: [Length]) {
+    // Concrete overload for CSS.Length (single or multiple values)
+    public func dynamicallyCall(withArguments args: [CSS.Length]) {
       let stringValue: String
       if args.count == 1 {
         stringValue = args[0].value
@@ -114,14 +114,14 @@
       setPropertyValue(stringValue)
     }
 
-    // Concrete overload for Percentage
-    public func dynamicallyCall(withArguments args: [Percentage]) {
+    // Concrete overload for CSS.Percentage
+    public func dynamicallyCall(withArguments args: [CSS.Percentage]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
-    // Concrete overload for LengthPercentage (single or multiple values)
-    public func dynamicallyCall(withArguments args: [LengthPercentage]) {
+    // Concrete overload for CSS.LengthPercentage (single or multiple values)
+    public func dynamicallyCall(withArguments args: [CSS.LengthPercentage]) {
       let stringValue: String
       if args.count == 1 {
         stringValue = args[0].value
@@ -131,8 +131,8 @@
       setPropertyValue(stringValue)
     }
 
-    // Concrete overload for CSSNumber (single or multiple values)
-    public func dynamicallyCall(withArguments args: [CSSNumber]) {
+    // Concrete overload for CSS.Number (single or multiple values)
+    public func dynamicallyCall(withArguments args: [CSS.Number]) {
       let stringValue: String
       if args.count == 1 {
         stringValue = args[0].value
@@ -142,15 +142,15 @@
       setPropertyValue(stringValue)
     }
 
-    // Concrete overload for CSSPosition
+    // Concrete overload for CSS.Position
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSPosition]) {
+    public func dynamicallyCall(withArguments args: [CSS.Position]) {
       guard let value = args.first else { return }
       setPropertyValue(value.rawValue)
     }
 
-    // Concrete overload for CSSTransformFunction (multiple values)
-    public func dynamicallyCall(withArguments args: [CSSTransformFunction]) {
+    // Concrete overload for CSS.TransformFunction (multiple values)
+    public func dynamicallyCall(withArguments args: [CSS.TransformFunction]) {
       if args.count == 1 {
         setPropertyValue(args[0].value)
       } else {
@@ -158,33 +158,33 @@
       }
     }
 
-    // CSSDisplay and CSSOverflow removed - use CSSDisplaySetter and CSSOverflowSetter instead
+    // CSS.Display and CSS.Overflow removed - use CSSDisplaySetter and CSSOverflowSetter instead
 
-    // CSSAlignItems removed - use CSSAlignItemsSetter instead
+    // CSS.AlignItems removed - use CSSAlignItemsSetter instead
 
-    // Concrete overload for CSSJustifyContent
+    // Concrete overload for CSS.JustifyContent
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSJustifyContent]) {
+    public func dynamicallyCall(withArguments args: [CSS.JustifyContent]) {
       guard let value = args.first else { return }
       setPropertyValue(value.rawValue)
     }
 
-    // Concrete overload for CSSFlexDirection
+    // Concrete overload for CSS.FlexDirection
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSFlexDirection]) {
+    public func dynamicallyCall(withArguments args: [CSS.FlexDirection]) {
       guard let value = args.first else { return }
       setPropertyValue(value.rawValue)
     }
 
-    // Concrete overload for CSSCursor
+    // Concrete overload for CSS.Cursor
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSCursor]) {
+    public func dynamicallyCall(withArguments args: [CSS.Cursor]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
-    // Concrete overload for CSSFilterFunction (multiple values)
-    public func dynamicallyCall(withArguments args: [CSSFilterFunction]) {
+    // Concrete overload for CSS.FilterFunction (multiple values)
+    public func dynamicallyCall(withArguments args: [CSS.FilterFunction]) {
       if args.count == 1 {
         setPropertyValue(args[0].value)
       } else {
@@ -203,50 +203,50 @@
       setPropertyValue(stringValue)
     }
 
-    // Concrete overload for CSSColor
-    public func dynamicallyCall(withArguments args: [CSSColor]) {
+    // Concrete overload for CSS.Color
+    public func dynamicallyCall(withArguments args: [CSS.Color]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
-    // CSSColor removed - use CSSColorSetter for color property
+    // CSS.Color removed - use CSSColorSetter for color property
 
-    // Concrete overload for CSSFontFamily
-    public func dynamicallyCall(withArguments args: [CSSFontFamily]) {
+    // Concrete overload for CSS.FontFamily
+    public func dynamicallyCall(withArguments args: [CSS.FontFamily]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
-    // Concrete overload for CSSFontWeight
-    public func dynamicallyCall(withArguments args: [CSSFontWeight]) {
+    // Concrete overload for CSS.FontWeight
+    public func dynamicallyCall(withArguments args: [CSS.FontWeight]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
-    // Concrete overload for CSSWhiteSpace
+    // Concrete overload for CSS.WhiteSpace
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSWhiteSpace]) {
+    public func dynamicallyCall(withArguments args: [CSS.WhiteSpace]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
 
-    // Concrete overload for CSSFontStyle
+    // Concrete overload for CSS.FontStyle
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSFontStyle]) {
+    public func dynamicallyCall(withArguments args: [CSS.FontStyle]) {
       guard let value = args.first else { return }
       setPropertyValue(value.rawValue)
     }
 
-    // Concrete overload for CSSSpreadShadow
+    // Concrete overload for CSS.SpreadShadow
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSSpreadShadow]) {
+    public func dynamicallyCall(withArguments args: [CSS.SpreadShadow]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
-    // Concrete overload for CSSTextOverflow
+    // Concrete overload for CSS.TextOverflow
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSTextOverflow]) {
+    public func dynamicallyCall(withArguments args: [CSS.TextOverflow]) {
       guard let value = args.first else { return }
       if let staticStr = value.staticRawValue {
         setPropertyStaticString(staticStr)
@@ -255,52 +255,52 @@
       }
     }
 
-    // Concrete overload for CSSTextTransform (Needed for dot-syntax resolution like .uppercase)
+    // Concrete overload for CSS.TextTransform (Needed for dot-syntax resolution like .uppercase)
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSTextTransform]) {
+    public func dynamicallyCall(withArguments args: [CSS.TextTransform]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
 
-    // CSSPointerEvents removed - use CSSPointerEventsSetter instead
+    // CSS.PointerEvents removed - use CSSPointerEventsSetter instead
 
-    // Concrete overload for CSSBoxSizing
+    // Concrete overload for CSS.BoxSizing
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSBoxSizing]) {
+    public func dynamicallyCall(withArguments args: [CSS.BoxSizing]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
-    // Concrete overload for CSSUserSelect
+    // Concrete overload for CSS.UserSelect
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSUserSelect]) {
+    public func dynamicallyCall(withArguments args: [CSS.UserSelect]) {
       guard let value = args.first else { return }
       setPropertyStaticString(value.staticRawValue)
     }
 
-    // Concrete overload for CSSBorder
+    // Concrete overload for CSS.Border
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSBorder]) {
+    public func dynamicallyCall(withArguments args: [CSS.Border]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
-    // Concrete overload for CSSBorder.LineStyle
+    // Concrete overload for CSS.Border.LineStyle
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSBorder.LineStyle]) {
+    public func dynamicallyCall(withArguments args: [CSS.Border.LineStyle]) {
       guard let value = args.first else { return }
       setPropertyValue(value.value)
     }
 
     // Overload for animation tuples
-    public func dynamicallyCall(withArguments args: [(String, CSSTime, CSSEasingFunction)]) {
+    public func dynamicallyCall(withArguments args: [(String, CSS.Time, CSS.EasingFunction)]) {
       guard let value = args.first else { return }
       let stringValue = "\(value.0) \(value.1.value) \(value.2.value)"
       setPropertyValue(stringValue)
     }
 
     // Overload for boxShadow tuples
-    public func dynamicallyCall(withArguments args: [(Int, Length, Length, CSSColor)]) {
+    public func dynamicallyCall(withArguments args: [(Int, CSS.Length, CSS.Length, CSS.Color)]) {
       guard let value = args.first else { return }
       let stringValue = "\(intToString(value.0)) \(value.1.value) \(value.2.value) \(value.3.value)"
       setPropertyValue(stringValue)
@@ -308,15 +308,15 @@
 
     // Overload for transition tuples
     public func dynamicallyCall(
-      withArguments args: [(CSSSingleTransitionProperty, CSSTime, CSSEasingFunction)]
+      withArguments args: [(CSS.SingleTransitionProperty, CSS.Time, CSS.EasingFunction)]
     ) {
       let transitions = args.map { "\($0.0.value) \($0.1.value) \($0.2.value)" }
       let stringValue = stringJoin(transitions, separator: ", ")
       setPropertyValue(stringValue)
     }
 
-    // Overload for border tuples (Length, LineStyle, Color)
-    public func dynamicallyCall(withArguments args: [(Length, CSSBorder.LineStyle, CSSColor)]) {
+    // Overload for border tuples (CSS.Length, LineStyle, Color)
+    public func dynamicallyCall(withArguments args: [(CSS.Length, CSS.Border.LineStyle, CSS.Color)]) {
       guard let value = args.first else { return }
       let stringValue = "\(value.0.value) \(value.1.value) \(value.2.value)"
       setPropertyValue(stringValue)

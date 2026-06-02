@@ -1,3 +1,4 @@
+import WebTypes
 #if CLIENT
   import DOMBuilder
 
@@ -50,9 +51,9 @@
       event_stopPropagation(ptr, Int32(len))
     }
 
-    public var target: Element? {
+    public var target: DOM.Element? {
       let targetID = event_target(ptr, Int32(len))
-      return targetID >= 0 ? Element(id: targetID) : nil
+      return targetID >= 0 ? DOM.Element(id: targetID) : nil
     }
 
     public var detail: String {
@@ -77,9 +78,9 @@
       event_deltaY(ptr, Int32(len))
     }
 
-    public var relatedTarget: Element? {
+    public var relatedTarget: DOM.Element? {
       let targetID = event_relatedTarget(ptr, Int32(len))
-      return targetID >= 0 ? Element(id: targetID) : nil
+      return targetID >= 0 ? DOM.Element(id: targetID) : nil
     }
   }
 #endif

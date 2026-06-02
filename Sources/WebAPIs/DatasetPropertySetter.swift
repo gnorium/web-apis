@@ -1,3 +1,4 @@
+import WebTypes
 #if CLIENT
   import DOMBuilder
   import EmbeddedSwiftUtilities
@@ -9,7 +10,7 @@
 
     /// Read the data attribute value
     public var value: String? {
-      Element(id: elementID).getAttribute(attribute)
+      DOM.Element(id: elementID).getAttribute(attribute)
     }
 
     /// Set the data attribute value via call syntax: dataset.contrast("more")

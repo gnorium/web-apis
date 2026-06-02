@@ -7,7 +7,7 @@
     let elementID: Int32
     let property: String
 
-    public func dynamicallyCall(withArguments args: [CSSColor]) {
+    public func dynamicallyCall(withArguments args: [CSS.Color]) {
       guard let value = args.first else { return }
       let stringValue = value.value
       var propBuffer = Array(property.utf8)
@@ -31,7 +31,7 @@
     }
 
     // Support for global keywords like .inherit
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
       var propBuffer = Array(property.utf8)
       propBuffer.append(0)

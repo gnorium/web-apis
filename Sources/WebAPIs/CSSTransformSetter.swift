@@ -53,7 +53,7 @@
     }
 
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSTransformFunction]) {
+    public func dynamicallyCall(withArguments args: [CSS.TransformFunction]) {
       if args.count == 1 {
         setProperty("transform", args[0].value)
       } else if args.count > 1 {
@@ -61,12 +61,12 @@
       }
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.None]) {
       guard let value = args.first else { return }
       setProperty("transform", value.staticRawValue)
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
       setProperty("transform", value.staticRawValue)
     }

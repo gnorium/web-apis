@@ -1,7 +1,7 @@
 #if CLIENT
   import WebTypes
 
-  extension CSSColorScheme {
+  extension CSS.ColorScheme {
     public var staticRawValue: StaticString {
       switch self {
       case .normal:

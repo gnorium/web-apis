@@ -7,12 +7,12 @@
     let elementID: Int32
 
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSTextAlign]) {
+    public func dynamicallyCall(withArguments args: [CSS.TextAlign]) {
       guard let value = args.first else { return }
       setProperty("text-align", value.staticRawValue)
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
       setProperty("text-align", value.staticRawValue)
     }

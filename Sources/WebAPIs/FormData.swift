@@ -1,3 +1,4 @@
+import WebTypes
 #if CLIENT
   import DOMBuilder
   import EmbeddedSwiftUtilities
@@ -5,7 +6,7 @@
   public struct FormData: Sendable {
     let formID: Int32
 
-    public init(_ form: Element) {
+    public init(_ form: DOM.Element) {
       self.formID = Int32(form.id)
     }
 

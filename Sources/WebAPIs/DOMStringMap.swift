@@ -1,3 +1,4 @@
+import WebTypes
 #if CLIENT
   import DOMBuilder
   import EmbeddedSwiftUtilities
@@ -14,7 +15,7 @@
       get {
         let kebabCase = camelToKebab(key)
         let attributeName = "data-\(kebabCase)"
-        return Element(id: elementID).getAttribute(attributeName)
+        return DOM.Element(id: elementID).getAttribute(attributeName)
       }
       set {
         guard let value = newValue else { return }

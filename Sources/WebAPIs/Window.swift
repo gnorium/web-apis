@@ -90,7 +90,7 @@
   }
 
   extension Window: EventTargeting {
-    public func dispatchEvent(_ event: Element) {
+    public func dispatchEvent(_ event: DOM.Element) {
       window_dispatchEvent(Int32(event.id))
     }
 
@@ -233,7 +233,7 @@
     ///   - x: X coordinate to scroll to
     ///   - y: Y coordinate to scroll to
     ///   - behavior: 0 for auto (default), 1 for smooth
-    public func scrollTo(_ x: Double, _ y: Double, behavior: ScrollBehavior = .auto) {
+    public func scrollTo(_ x: Double, _ y: Double, behavior: CSSOM.ScrollBehavior = .auto) {
       window_scrollTo(x, y, Int32(behavior.rawValue))
     }
 

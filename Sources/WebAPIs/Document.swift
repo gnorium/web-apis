@@ -12,7 +12,7 @@
       document_fontsReady(Int32(callbackID))
     }
 
-    public func querySelector(_ selector: StaticString) -> Element? {
+    public func querySelector(_ selector: StaticString) -> DOM.Element? {
       return selector.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
           let id = document_querySelector(pointer, Int32(buffer.count))
@@ -21,7 +21,7 @@
       }
     }
 
-    public func querySelector(_ selector: String) -> Element? {
+    public func querySelector(_ selector: String) -> DOM.Element? {
       var buffer = Array(selector.utf8)
       buffer.append(0)
       return buffer.withUnsafeBufferPointer { bufferPtr in
@@ -33,7 +33,7 @@
       }
     }
 
-    public func querySelectorAll(_ selector: String) -> [Element] {
+    public func querySelectorAll(_ selector: String) -> [DOM.Element] {
       var buffer = Array(selector.utf8)
       buffer.append(0)
       return buffer.withUnsafeBufferPointer { bufferPtr in
@@ -49,7 +49,7 @@
       }
     }
 
-    public func getElementById(_ id: String) -> Element? {
+    public func getElementById(_ id: String) -> DOM.Element? {
       var buffer = Array(id.utf8)
       buffer.append(0)
       return buffer.withUnsafeBufferPointer { bufferPtr in
@@ -61,7 +61,7 @@
       }
     }
 
-    public func createElement(_ tagName: String) -> Element {
+    public func createElement(_ tagName: String) -> DOM.Element {
       var buffer = Array(tagName.utf8)
       buffer.append(0)
       return buffer.withUnsafeBufferPointer { bufferPtr in
@@ -73,7 +73,7 @@
       }
     }
 
-    public func createElement(_ tagName: StaticString) -> Element {
+    public func createElement(_ tagName: StaticString) -> DOM.Element {
       return tagName.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
           let id = document_createElement(pointer, Int32(buffer.count))
@@ -82,7 +82,7 @@
       }
     }
 
-    public func createElementNS(_ namespace: String, _ tagName: String) -> Element {
+    public func createElementNS(_ namespace: String, _ tagName: String) -> DOM.Element {
       var nsBuffer = Array(namespace.utf8)
       nsBuffer.append(0)
       var tagBuffer = Array(tagName.utf8)
@@ -103,22 +103,22 @@
       }
     }
 
-    public func createElement(_ tag: TagName) -> Element {
+    public func createElement(_ tag: HTML.TagName) -> DOM.Element {
       return createElement(tag.value)
     }
 
-    public func createElementNS(_ namespace: String, _ tag: TagName) -> Element {
+    public func createElementNS(_ namespace: String, _ tag: HTML.TagName) -> DOM.Element {
       return tag.value.withUTF8Buffer { buffer in
         let tagStr = String(decoding: buffer, as: UTF8.self)
         return createElementNS(namespace, tagStr)
       }
     }
 
-    public var body: Element {
+    public var body: DOM.Element {
       querySelector("body")!
     }
 
-    public var activeElement: Element? {
+    public var activeElement: DOM.Element? {
       let elementID = document_getActiveElement()
       return elementID >= 0 ? ElementFactory.create(id: elementID) : nil
     }
@@ -127,14 +127,14 @@
       return CustomEvent(type: type, detail: detail)
     }
 
-    public func createTextNode(_ text: String) -> Node {
+    public func createTextNode(_ text: String) -> DOM.Node {
       var buffer = Array(text.utf8)
       buffer.append(0)
       return buffer.withUnsafeBufferPointer { bufferPtr in
         bufferPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) {
           pointer in
           let nodeID = document_createTextNode(pointer, Int32(buffer.count - 1))
-          return Node(id: nodeID)
+          return DOM.Node(id: nodeID)
         }
       }
     }

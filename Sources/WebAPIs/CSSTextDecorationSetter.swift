@@ -7,7 +7,7 @@
     let elementID: Int32
 
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSSTextDecoration]) {
+    public func dynamicallyCall(withArguments args: [CSS.TextDecoration]) {
       guard let value = args.first else { return }
       if let staticValue = value.staticRawValue {
         setProperty("text-decoration", staticValue)
@@ -16,12 +16,12 @@
       }
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.None]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.None]) {
       guard let value = args.first else { return }
       setProperty("text-decoration", value.staticRawValue)
     }
 
-    public func dynamicallyCall(withArguments args: [CSSKeyword.Global]) {
+    public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
       setProperty("text-decoration", value.staticRawValue)
     }
