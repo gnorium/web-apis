@@ -385,6 +385,14 @@
       setProperty(property.name.rawValue, value.staticRawValue, priority.rawValue)
     }
 
+    public final func setProperty<T>(_ property: CSSProperty<T>, _ value: CSS.Keyword.Global) {
+      setProperty(property.name.rawValue, value.staticRawValue)
+    }
+
+    public final func setProperty<T>(_ property: CSSProperty<T>, _ value: CSS.Keyword.Global, _ priority: CSS.Priority = .normal) {
+      setProperty(property.name.rawValue, value.staticRawValue, priority.rawValue)
+    }
+
     public func setProperty(_ property: CSSProperty<CSS.Overflow>, _ value: CSS.Overflow, _ priority: CSS.Priority = .normal) {
       setProperty(property.name.rawValue, toString(value.staticRawValue), priority.rawValue)
     }
@@ -750,6 +758,11 @@
     public func boxShadow(_ value: (CSS.Length, CSS.Length, CSS.Length, CSS.Length, CSS.Color)) {
       let stringValue =
         "\(value.0.value) \(value.1.value) \(value.2.value) \(value.3.value) \(value.4.value)"
+      setProperty(.boxShadow, stringValue)
+    }
+
+    public func boxShadow(_ offsetX: CSS.Length, _ offsetY: CSS.Length, _ blur: CSS.Length, _ spread: CSS.Length, _ color: CSS.Color) {
+      let stringValue = "\(offsetX.value) \(offsetY.value) \(blur.value) \(spread.value) \(color.value)"
       setProperty(.boxShadow, stringValue)
     }
 
@@ -1167,8 +1180,8 @@
       return CSSTextDecorationSetter(elementID: elementID)
     }
 
-    public var listStyle: CSSListStyleSetter {
-      return CSSListStyleSetter(elementID: elementID)
+    public var listStyleType: CSSListStyleTypeSetter {
+      return CSSListStyleTypeSetter(elementID: elementID)
     }
 
     public var visibility: CSSVisibilitySetter {
@@ -1292,6 +1305,10 @@
       }
 
       return String(decoding: result, as: UTF8.self)
+    }
+
+    public func gridColumn(_ value: String) {
+      setProperty("grid-column", value)
     }
   }
 #endif

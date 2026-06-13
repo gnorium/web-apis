@@ -260,6 +260,18 @@
       element_appendChild(id, child.id)
     }
 
+    public func removeChild(_ child: DOM.Element) {
+      element_removeChild(id, child.id)
+    }
+
+    public func insertBefore(_ newChild: DOM.Element, _ reference: DOM.Element) {
+      element_insertBefore(id, newChild.id, reference.id)
+    }
+
+    public var clientHeight: Int {
+      Int(element_clientHeight(id))
+    }
+
     public func setInnerHTML(_ html: String) {
       var buffer = Array(html.utf8)
       buffer.append(0)
@@ -402,4 +414,13 @@
 
   @_extern(wasm, module: "env", name: "element_appendChild")
   func element_appendChild(_ parentID: Int32, _ childID: Int32)
+
+  @_extern(wasm, module: "env", name: "element_removeChild")
+  func element_removeChild(_ parentID: Int32, _ childID: Int32)
+
+  @_extern(wasm, module: "env", name: "element_insertBefore")
+  func element_insertBefore(_ parentID: Int32, _ newChildID: Int32, _ referenceID: Int32)
+
+  @_extern(wasm, module: "env", name: "element_clientHeight")
+  func element_clientHeight(_ elementID: Int32) -> Int32
 #endif

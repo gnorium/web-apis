@@ -139,6 +139,22 @@
       }
     }
 
+    public func setCookie(name: String, value: String, maxAge: Int32) {
+      var nameBuf = Array(name.utf8)
+      nameBuf.append(0)
+      var valBuf = Array(value.utf8)
+      valBuf.append(0)
+      nameBuf.withUnsafeBufferPointer { namePtr in
+        namePtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: nameBuf.count) { namePointer in
+          valBuf.withUnsafeBufferPointer { valPtr in
+            valPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: valBuf.count) { valPointer in
+              document_setCookie(namePointer, Int32(nameBuf.count - 1), valPointer, Int32(valBuf.count - 1), maxAge)
+            }
+          }
+        }
+      }
+    }
+
   }
 
   extension Document: EventTargeting {
@@ -238,4 +254,11 @@
 
   @_extern(wasm, module: "env", name: "document_createTextNode")
   func document_createTextNode(_ textPointer: UnsafePointer<CChar>, _ textLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "document_setCookie")
+  func document_setCookie(
+    _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32,
+    _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32,
+    _ maxAge: Int32
+  )
 #endif

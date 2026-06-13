@@ -87,6 +87,9 @@
     public var devicePixelRatio: Double {
       window_devicePixelRatio()
     }
+    public var innerWidth: Double {
+      window_innerWidth()
+    }
   }
 
   extension Window: EventTargeting {
@@ -336,6 +339,9 @@
 
   @_extern(wasm, module: "env", name: "window_devicePixelRatio")
   func window_devicePixelRatio() -> Double
+
+  @_extern(wasm, module: "env", name: "window_innerWidth")
+  func window_innerWidth() -> Double
 
   @_extern(wasm, module: "env", name: "window_removeEventListener")
   func window_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)

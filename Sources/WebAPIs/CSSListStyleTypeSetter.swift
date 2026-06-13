@@ -3,28 +3,28 @@
   import WebTypes
 
   @dynamicCallable
-  public struct CSSListStyleSetter: Sendable {
+  public struct CSSListStyleTypeSetter: Sendable {
     let elementID: Int32
 
     @_disfavoredOverload
-    public func dynamicallyCall(withArguments args: [CSS.ListStyle]) {
+    public func dynamicallyCall(withArguments args: [CSS.ListStyle.`Type`]) {
       guard let value = args.first else { return }
-      setProperty("list-style", value.staticRawValue)
+      setProperty("list-style-type", value.staticRawValue)
     }
 
     public func dynamicallyCall(withArguments args: [CSS.Keyword.None]) {
       guard let value = args.first else { return }
-      setProperty("list-style", value.staticRawValue)
+      setProperty("list-style-type", value.staticRawValue)
     }
 
     public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
-      setProperty("list-style", value.staticRawValue)
+      setProperty("list-style-type", value.staticRawValue)
     }
 
     public func dynamicallyCall(withArguments args: [String]) {
       guard let value = args.first else { return }
-      setProperty("list-style", value)
+      setProperty("list-style-type", value)
     }
 
     private func setProperty(_ property: StaticString, _ value: String) {
