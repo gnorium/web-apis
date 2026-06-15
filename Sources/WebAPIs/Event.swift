@@ -147,6 +147,7 @@
       case touchcancel
       case dblclick
       case dragstart
+      case error
 
       public var rawValue: String {
         switch self {
@@ -179,6 +180,7 @@
         case .touchcancel: return "touchcancel"
         case .dblclick: return "dblclick"
         case .dragstart: return "dragstart"
+        case .error: return "error"
         }
       }
 
@@ -239,6 +241,8 @@
           self = .dragstart
         } else if stringEquals(rawValue, "dblclick") {
           self = .dblclick
+        } else if stringEquals(rawValue, "error") {
+          self = .error
         } else {
           return nil
         }
@@ -275,6 +279,7 @@
         case .touchcancel: return "touchcancel"
         case .dblclick: return "dblclick"
         case .dragstart: return "dragstart"
+        case .error: return "error"
         }
       }
     }
@@ -308,6 +313,7 @@
     public static let touchcancel: StaticString = "touchcancel"
     public static let dblclick: StaticString = "dblclick"
     public static let dragstart: StaticString = "dragstart"
+    public static let error: StaticString = "error"
 
     // Event instance properties
     private let parsedDetail: String

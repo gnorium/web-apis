@@ -231,6 +231,28 @@
       return setAttribute(name.rawValue, String(value))
     }
 
+    public func setDisabled(_ disabled: Bool) {
+      element_setDisabled(Int32(id), disabled ? 1 : 0)
+    }
+
+    public var isImageLoaded: Bool {
+      element_isImageLoaded(Int32(id)) != 0
+    }
+
+    public var firstChild: DOM.Element? {
+      let childID = element_firstChild(Int32(id))
+      return childID >= 0 ? DOM.Element(id: childID) : nil
+    }
+
+    public var inputValue: String {
+      var buffer = [UInt8](repeating: 0, count: 256)
+      let len = element_getInputValue(Int32(id), &buffer, 256)
+      guard len > 0 else { return "" }
+      return buffer.withUnsafeBufferPointer { ptr in
+        ptr.baseAddress.map { String(cString: $0) } ?? ""
+      }
+    }
+
     public var href: String {
       get { getAttribute(.href) ?? "" }
       set { setAttribute(.href, newValue) }
@@ -268,6 +290,20 @@
       element_insertBefore(id, newChild.id, reference.id)
     }
 
+    // Observe size changes via ResizeObserver. Callback receives (width, height) in CSS pixels.
+    // JS encodes payload as "width,height" (e.g. "800.0,600.0").
+    public func observeResize(_ callback: @escaping @Sendable (Double, Double) -> Void) {
+      let callbackID = CallbackRegistry.register { payload in
+        let str = payload.toString()
+        let parts = stringSplit(str, separator: ",")
+        guard parts.count == 2 else { return }
+        let w = parseDouble(parts[0]) ?? 0
+        let h = parseDouble(parts[1]) ?? 0
+        callback(w, h)
+      }
+      element_observeResize(Int32(id), Int32(callbackID))
+    }
+
     public var clientHeight: Int {
       Int(element_clientHeight(id))
     }
@@ -296,6 +332,10 @@
           }
         }
       }
+    }
+
+    public func requestFullscreen() {
+      element_requestFullscreen(Int32(id))
     }
   }
 
@@ -423,4 +463,37 @@
 
   @_extern(wasm, module: "env", name: "element_clientHeight")
   func element_clientHeight(_ elementID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "element_setDisabled")
+  func element_setDisabled(_ elementID: Int32, _ disabled: Int32)
+
+  @_extern(wasm, module: "env", name: "element_isImageLoaded")
+  func element_isImageLoaded(_ elementID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "element_firstChild")
+  func element_firstChild(_ elementID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "element_observeResize")
+  func element_observeResize(_ elementID: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "element_getInputValue")
+  func element_getInputValue(_ elementID: Int32, _ buffer: UnsafeMutablePointer<UInt8>, _ maxLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "element_requestFullscreen")
+  func element_requestFullscreen(_ elementID: Int32)
+
+  @_extern(wasm, module: "env", name: "artifact_preloadImages")
+  func artifact_preloadImages(_ urlsPointer: UnsafePointer<CChar>, _ urlsLen: Int32)
+
+  public func preloadImages(urls: [String]) {
+    guard !urls.isEmpty else { return }
+    let joined = urls.joined(separator: "\n")
+    var buffer = Array(joined.utf8)
+    buffer.append(0)
+    buffer.withUnsafeBufferPointer { ptr in
+      ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { cPtr in
+        artifact_preloadImages(cPtr, Int32(buffer.count - 1))
+      }
+    }
+  }
 #endif

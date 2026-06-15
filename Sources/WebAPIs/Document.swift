@@ -139,6 +139,14 @@
       }
     }
 
+    public func exitFullscreen() {
+      document_exitFullscreen()
+    }
+
+    public var isFullscreen: Bool {
+      document_isFullscreen() != 0
+    }
+
     public func setCookie(name: String, value: String, maxAge: Int32) {
       var nameBuf = Array(name.utf8)
       nameBuf.append(0)
@@ -254,6 +262,12 @@
 
   @_extern(wasm, module: "env", name: "document_createTextNode")
   func document_createTextNode(_ textPointer: UnsafePointer<CChar>, _ textLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "document_exitFullscreen")
+  func document_exitFullscreen()
+
+  @_extern(wasm, module: "env", name: "document_isFullscreen")
+  func document_isFullscreen() -> Int32
 
   @_extern(wasm, module: "env", name: "document_setCookie")
   func document_setCookie(

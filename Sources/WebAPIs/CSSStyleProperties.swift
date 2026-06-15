@@ -894,6 +894,14 @@
       setProperty(.maxWidth, value.staticRawValue)
     }
 
+    public func willChange(_ properties: CSS.SingleTransitionProperty...) {
+      var result = ""
+      for (i, p) in properties.enumerated() {
+        result = i == 0 ? p.value : "\(result), \(p.value)"
+      }
+      setProperty("will-change", result)
+    }
+
     public func maxWidth(_ value: CSS.Keyword.Length) {
       setProperty(.maxWidth, value.rawValue)
     }
