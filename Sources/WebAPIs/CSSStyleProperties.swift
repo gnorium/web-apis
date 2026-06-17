@@ -1247,6 +1247,16 @@
       setProperty(.mask, value)
     }
 
+    public func maskImage(_ gradient: CSS.Image.Gradient) {
+      setProperty(.maskImage, gradient.value)
+      setProperty(.webkitMaskImage, gradient.value)
+    }
+
+    public func removeMaskImage() {
+      removeProperty(.maskImage)
+      removeProperty(.webkitMaskImage)
+    }
+
     // Helper for transition with 3 parameters
     public func transition(
       _ property: CSS.SingleTransitionProperty, _ duration: CSS.Time,

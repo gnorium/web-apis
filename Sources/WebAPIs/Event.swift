@@ -33,6 +33,7 @@
       case touchcancel = "touchcancel"
       case dblclick = "dblclick"
       case dragstart = "dragstart"
+      case fullscreenchange = "fullscreenchange"
 
       public var staticString: StaticString {
         switch self {
@@ -65,6 +66,7 @@
         case .touchcancel: return "touchcancel"
         case .dblclick: return "dblclick"
         case .dragstart: return "dragstart"
+        case .fullscreenchange: return "fullscreenchange"
         }
       }
     }
@@ -98,6 +100,7 @@
     public static let touchcancel: StaticString = "touchcancel"
     public static let dblclick: StaticString = "dblclick"
     public static let dragstart: StaticString = "dragstart"
+    public static let fullscreenchange: StaticString = "fullscreenchange"
 
     // Event instance properties (Placeholder for server-side event objects if needed)
     public let detail: String
@@ -147,6 +150,7 @@
       case touchcancel
       case dblclick
       case dragstart
+      case fullscreenchange
       case error
 
       public var rawValue: String {
@@ -180,6 +184,7 @@
         case .touchcancel: return "touchcancel"
         case .dblclick: return "dblclick"
         case .dragstart: return "dragstart"
+        case .fullscreenchange: return "fullscreenchange"
         case .error: return "error"
         }
       }
@@ -241,6 +246,8 @@
           self = .dragstart
         } else if stringEquals(rawValue, "dblclick") {
           self = .dblclick
+        } else if stringEquals(rawValue, "fullscreenchange") {
+          self = .fullscreenchange
         } else if stringEquals(rawValue, "error") {
           self = .error
         } else {
@@ -279,6 +286,7 @@
         case .touchcancel: return "touchcancel"
         case .dblclick: return "dblclick"
         case .dragstart: return "dragstart"
+        case .fullscreenchange: return "fullscreenchange"
         case .error: return "error"
         }
       }
@@ -313,6 +321,7 @@
     public static let touchcancel: StaticString = "touchcancel"
     public static let dblclick: StaticString = "dblclick"
     public static let dragstart: StaticString = "dragstart"
+    public static let fullscreenchange: StaticString = "fullscreenchange"
     public static let error: StaticString = "error"
 
     // Event instance properties
