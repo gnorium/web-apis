@@ -53,7 +53,7 @@
       return buffer.withUnsafeBufferPointer { bufferPtr in
         bufferPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) {
           pointer in
-          let maxElements: Int32 = 256
+          let maxElements: Int32 = 4096
           let resultBuffer = UnsafeMutablePointer<Int32>.allocate(capacity: Int(maxElements))
           defer { resultBuffer.deallocate() }
           let count = element_querySelectorAll(
