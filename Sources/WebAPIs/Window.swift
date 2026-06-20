@@ -104,14 +104,19 @@
     public func addEventListener(
       _ event: StaticString,
       _ handler: @escaping @Sendable (Event) -> Void,
-      capture: Bool
+      capture: Bool,
+      passive: Bool?
     ) -> Int32 {
       let callbackID = CallbackRegistry.register { payload in
         handler(Event(payload: payload))
       }
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          window_addEventListener(pointer, Int32(buffer.count), Int32(callbackID), capture ? 1 : 0)
+          window_addEventListener(
+            pointer, Int32(buffer.count), Int32(callbackID),
+            capture ? 1 : 0,
+            passive.map { $0 ? 1 : 0 } ?? -1
+          )
         }
       }
       return Int32(callbackID)
@@ -287,7 +292,7 @@
 
   @_extern(wasm, module: "env", name: "window_addEventListener")
   func window_addEventListener(
-    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32, _ capture: Int32)
+    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32, _ capture: Int32, _ passive: Int32)
 
   @_extern(wasm, module: "env", name: "window_requestAnimationFrame")
   func window_requestAnimationFrame(_ callbackID: Int32) -> Int32

@@ -3,14 +3,8 @@
     func addEventListener(
       _ event: StaticString,
       _ handler: @escaping @Sendable (Event) -> Void,
-      capture: Bool
-    ) -> Int32
-    
-    // Default implementation or overloaded version with capture = false
-    @discardableResult
-    func addEventListener(
-      _ event: StaticString,
-      _ handler: @escaping @Sendable (Event) -> Void
+      capture: Bool,
+      passive: Bool?
     ) -> Int32
     func removeEventListener(_ event: StaticString, _ callbackID: Int32)
     func dispatchEvent(_ event: StaticString)
@@ -20,26 +14,21 @@
     @discardableResult
     func addEventListener(
       _ event: StaticString,
-      _ handler: @escaping @Sendable (Event) -> Void
+      _ handler: @escaping @Sendable (Event) -> Void,
+      capture: Bool = false,
+      passive: Bool? = nil
     ) -> Int32 {
-      return addEventListener(event, handler, capture: false)
+      return addEventListener(event, handler, capture: capture, passive: passive)
     }
-    
-    @discardableResult
-    func addEventListener(
-      _ type: Event.`Type`,
-      _ handler: @escaping @Sendable (Event) -> Void
-    ) -> Int32 {
-      return addEventListener(type.staticString, handler, capture: false)
-    }
-    
+
     @discardableResult
     func addEventListener(
       _ type: Event.`Type`,
       _ handler: @escaping @Sendable (Event) -> Void,
-      capture: Bool
+      capture: Bool = false,
+      passive: Bool? = nil
     ) -> Int32 {
-      return addEventListener(type.staticString, handler, capture: capture)
+      return addEventListener(type.staticString, handler, capture: capture, passive: passive)
     }
   }
 #endif

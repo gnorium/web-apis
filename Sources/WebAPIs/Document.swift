@@ -170,14 +170,19 @@
     public func addEventListener(
       _ event: StaticString,
       _ handler: @escaping @Sendable (Event) -> Void,
-      capture: Bool
+      capture: Bool,
+      passive: Bool?
     ) -> Int32 {
       let callbackID = CallbackRegistry.register { payload in
         handler(Event(payload: payload))
       }
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
-          document_addEventListener(pointer, Int32(buffer.count), Int32(callbackID), capture ? 1 : 0)
+          document_addEventListener(
+            pointer, Int32(buffer.count), Int32(callbackID),
+            capture ? 1 : 0,
+            passive.map { $0 ? 1 : 0 } ?? -1
+          )
         }
       }
       return Int32(callbackID)
@@ -221,7 +226,7 @@
 
   @_extern(wasm, module: "env", name: "document_addEventListener")
   func document_addEventListener(
-    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32, _ capture: Int32)
+    _ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32, _ capture: Int32, _ passive: Int32)
 
   @_extern(wasm, module: "env", name: "document_removeEventListener")
   func document_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)
