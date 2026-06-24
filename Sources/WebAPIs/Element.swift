@@ -186,11 +186,6 @@
       return ElementFactory.create(id: newID)
     }
 
-    public var firstElementChild: DOM.Element? {
-      let resultID = element_firstElementChild(id)
-      return resultID >= 0 ? ElementFactory.create(id: resultID) : nil
-    }
-
     public var className: String {
       get { return getAttribute("class") ?? "" }
       set { setAttribute("class", newValue) }
@@ -242,11 +237,6 @@
 
     public var isImageLoaded: Bool {
       element_isImageLoaded(Int32(id)) != 0
-    }
-
-    public var firstChild: DOM.Element? {
-      let childID = element_firstChild(Int32(id))
-      return childID >= 0 ? DOM.Element(id: childID) : nil
     }
 
     public var inputValue: String {
@@ -307,10 +297,6 @@
         callback(w, h)
       }
       element_observeResize(Int32(id), Int32(callbackID))
-    }
-
-    public var clientHeight: Int {
-      Int(element_clientHeight(id))
     }
 
     public func setInnerHTML(_ html: String) {
@@ -378,9 +364,6 @@
 
   @_extern(wasm, module: "env", name: "element_dispatchCustomEvent")
   func element_dispatchCustomEvent(_ elementID: Int32, _ eventPointer: Int32)
-
-  @_extern(wasm, module: "env", name: "element_firstElementChild")
-  func element_firstElementChild(_ elementID: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "element_getIndeterminate")
   func element_getIndeterminate(_ elementID: Int32) -> Int32
@@ -466,17 +449,11 @@
   @_extern(wasm, module: "env", name: "element_insertBefore")
   func element_insertBefore(_ parentID: Int32, _ newChildID: Int32, _ referenceID: Int32)
 
-  @_extern(wasm, module: "env", name: "element_clientHeight")
-  func element_clientHeight(_ elementID: Int32) -> Int32
-
   @_extern(wasm, module: "env", name: "element_setDisabled")
   func element_setDisabled(_ elementID: Int32, _ disabled: Int32)
 
   @_extern(wasm, module: "env", name: "element_isImageLoaded")
   func element_isImageLoaded(_ elementID: Int32) -> Int32
-
-  @_extern(wasm, module: "env", name: "element_firstChild")
-  func element_firstChild(_ elementID: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "element_observeResize")
   func element_observeResize(_ elementID: Int32, _ callbackID: Int32)
