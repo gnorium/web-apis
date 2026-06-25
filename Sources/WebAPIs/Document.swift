@@ -188,6 +188,10 @@
       return Int32(callbackID)
     }
 
+    public func removeEventListener(_ event: Event.`Type`, _ callbackID: Int32) {
+      removeEventListener(event.staticString, callbackID)
+    }
+
     public func removeEventListener(_ event: StaticString, _ callbackID: Int32) {
       event.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in

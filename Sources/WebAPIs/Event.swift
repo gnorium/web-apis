@@ -152,6 +152,7 @@
       case dragstart
       case fullscreenchange
       case error
+      case contextmenu
 
       public var rawValue: String {
         switch self {
@@ -186,6 +187,7 @@
         case .dragstart: return "dragstart"
         case .fullscreenchange: return "fullscreenchange"
         case .error: return "error"
+        case .contextmenu: return "contextmenu"
         }
       }
 
@@ -250,6 +252,8 @@
           self = .fullscreenchange
         } else if stringEquals(rawValue, "error") {
           self = .error
+        } else if stringEquals(rawValue, "contextmenu") {
+          self = .contextmenu
         } else {
           return nil
         }
@@ -288,6 +292,7 @@
         case .dragstart: return "dragstart"
         case .fullscreenchange: return "fullscreenchange"
         case .error: return "error"
+        case .contextmenu: return "contextmenu"
         }
       }
     }

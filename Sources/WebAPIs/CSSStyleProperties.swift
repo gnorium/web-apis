@@ -603,6 +603,14 @@
       setProperty(.userSelect, value.staticRawValue)
     }
 
+    public func webkitUserSelect(_ value: CSS.Keyword.None) {
+      setProperty(.webkitUserSelect, value.staticRawValue)
+    }
+
+    public func webkitTouchCallout(_ value: CSS.Keyword.None) {
+      setProperty(.webkitTouchCallout, value.staticRawValue)
+    }
+
     @_disfavoredOverload
     public func cursor(_ value: CSS.Cursor) {
       if let staticRawValue = value.staticRawValue {
