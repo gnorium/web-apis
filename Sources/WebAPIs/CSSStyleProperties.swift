@@ -611,6 +611,14 @@
       setProperty(.webkitTouchCallout, value.staticRawValue)
     }
 
+    public func webkitTapHighlightColor(_ value: StaticString) {
+      setProperty(.webkitTapHighlightColor, value)
+    }
+
+    public func webkitTapHighlightColor(_ value: CSS.Keyword.Transparent) {
+      setProperty(.webkitTapHighlightColor, value.rawValue)
+    }
+
     @_disfavoredOverload
     public func cursor(_ value: CSS.Cursor) {
       if let staticRawValue = value.staticRawValue {
