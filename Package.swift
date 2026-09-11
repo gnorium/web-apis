@@ -29,6 +29,7 @@ let package = Package(
         .product(name: "WebTypes", package: "web-types"),
         .product(name: "EmbeddedSwiftUtilities", package: "embedded-swift-utilities"),
         .product(name: "HTMLBuilder", package: "web-builders"),
+        .product(name: "DOMBuilder", package: "web-builders"),
       ],
       swiftSettings: [
         .enableExperimentalFeature("Embedded", .when(platforms: [.wasi])),

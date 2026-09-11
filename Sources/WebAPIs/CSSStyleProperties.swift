@@ -732,6 +732,11 @@
       setProperty(.borderLeft, stringValue)
     }
 
+    public func borderInlineStart(_ width: CSS.Length, _ style: CSS.Border.LineStyle, _ color: CSS.Color) {
+      let stringValue = "\(width.value) \(style.value) \(color.value)"
+      setProperty(.borderInlineStart, stringValue)
+    }
+
     @_disfavoredOverload
     public func whiteSpace(_ value: CSS.WhiteSpace) {
       setProperty(.whiteSpace, value.staticRawValue)
@@ -1168,6 +1173,7 @@
 
     // MARK: - Specific Property Accessors
 
+    /// Set: `el.style.display(.none)`. Get: `el.style.getPropertyValue(.display)`.
     public var display: CSSDisplaySetter {
       return CSSDisplaySetter(elementID: elementID)
     }
@@ -1316,6 +1322,10 @@
       _ keyword: CSS.Keyword.All, _ duration: CSS.Time, _ timingFunction: CSS.EasingFunction
     ) {
       setProperty(.transition, "all \(duration.value) \(timingFunction.value)")
+    }
+
+    public func transition(_ keyword: CSS.Keyword.None) {
+      setProperty(.transition, "none")
     }
 
     public subscript(dynamicMember property: String) -> CSSPropertySetter {

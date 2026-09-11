@@ -77,6 +77,9 @@
             }
           }
         }
+        public func writeText(from element: DOM.Element) {
+          navigator_clipboard_writeTextFromElement(element.id)
+        }
       }
       public let clipboard = Clipboard()
       public init() {}
@@ -92,6 +95,9 @@
     }
     public var innerWidth: Double {
       window_innerWidth()
+    }
+    public var innerHeight: Double {
+      window_innerHeight()
     }
   }
 
@@ -342,6 +348,9 @@
   @_extern(wasm, module: "env", name: "navigator_clipboard_writeText")
   func navigator_clipboard_writeText(_ textPointer: UnsafePointer<CChar>, _ textLen: Int32)
 
+  @_extern(wasm, module: "env", name: "navigator_clipboard_writeTextFromElement")
+  func navigator_clipboard_writeTextFromElement(_ elementID: Int32)
+
   @_extern(wasm, module: "env", name: "canvas_toBlob")
   public func canvas_toBlob(_ canvasID: Int32, _ callbackID: Int32)
 
@@ -353,6 +362,9 @@
 
   @_extern(wasm, module: "env", name: "window_innerWidth")
   func window_innerWidth() -> Double
+
+  @_extern(wasm, module: "env", name: "window_innerHeight")
+  func window_innerHeight() -> Double
 
   @_extern(wasm, module: "env", name: "window_removeEventListener")
   func window_removeEventListener(_ eventPointer: UnsafePointer<CChar>, _ eventLen: Int32, _ callbackID: Int32)

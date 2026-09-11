@@ -27,6 +27,19 @@
       event.clientY
     }
 
+    /// Active touch points on the target (`touches.length`).
+    public var touchCount: Int {
+      Int(event_touchCount(event.ptr, Int32(event.len)))
+    }
+
+    public func touchClientX(_ index: Int) -> Double {
+      event_touchClientX(event.ptr, Int32(event.len), Int32(index))
+    }
+
+    public func touchClientY(_ index: Int) -> Double {
+      event_touchClientY(event.ptr, Int32(event.len), Int32(index))
+    }
+
     public func preventDefault() {
       event.preventDefault()
     }

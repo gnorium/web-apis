@@ -22,11 +22,11 @@
     }
   }
 
-  @_expose(wasm, "invokeCallback")
-  public func invokeCallback(
+  public func dispatchCallback(
     _ id: Int32, _ eventKeyPointer: UnsafePointer<CChar>, _ eventKeyLen: Int32
   ) {
     let eventKey = CallbackString(ptr: eventKeyPointer, len: Int(eventKeyLen))
     CallbackRegistry.invoke(id, eventKey)
   }
+
 #endif

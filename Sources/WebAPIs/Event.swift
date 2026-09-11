@@ -396,6 +396,18 @@
       event_clientY(payload.ptr, Int32(payload.len))
     }
 
+    public var touchCount: Int {
+      Int(event_touchCount(payload.ptr, Int32(payload.len)))
+    }
+
+    public func touchClientX(_ index: Int) -> Double {
+      event_touchClientX(payload.ptr, Int32(payload.len), Int32(index))
+    }
+
+    public func touchClientY(_ index: Int) -> Double {
+      event_touchClientY(payload.ptr, Int32(payload.len), Int32(index))
+    }
+
     public var deltaY: Double {
       event_deltaY(payload.ptr, Int32(payload.len))
     }
@@ -442,6 +454,17 @@
 
   @_extern(wasm, module: "env", name: "event_clientY")
   func event_clientY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
+
+  @_extern(wasm, module: "env", name: "event_touchCount")
+  func event_touchCount(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_touchClientX")
+  func event_touchClientX(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ index: Int32)
+    -> Double
+
+  @_extern(wasm, module: "env", name: "event_touchClientY")
+  func event_touchClientY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ index: Int32)
+    -> Double
 
   @_extern(wasm, module: "env", name: "event_button")
   func event_button(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32

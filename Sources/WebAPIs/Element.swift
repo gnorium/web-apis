@@ -243,9 +243,7 @@
       var buffer = [UInt8](repeating: 0, count: 256)
       let len = element_getInputValue(Int32(id), &buffer, 256)
       guard len > 0 else { return "" }
-      return buffer.withUnsafeBufferPointer { ptr in
-        ptr.baseAddress.map { String(cString: $0) } ?? ""
-      }
+      return String(decoding: buffer[0..<Int(len)], as: UTF8.self)
     }
 
     public var href: String {

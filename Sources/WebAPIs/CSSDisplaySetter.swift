@@ -2,11 +2,61 @@
   import EmbeddedSwiftUtilities
   import WebTypes
 
+  /// Write-only handle for `element.style.display`.
+  ///
+  /// ```swift
+  /// el.style.display(.none)                          // set
+  /// el.style.getPropertyValue(.display)              // get (CSSOM)
+  /// stringEquals(el.style.getPropertyValue(.display), "none")
+  /// ```
+  ///
+  /// Prefer `callAsFunction` overloads (not only `@dynamicCallable`) so
+  /// `.none` resolves as `CSS.Keyword.None` — Embedded's dynamicCallable
+  /// path often loses that context and collides with `Optional.none`.
   @dynamicCallable
   public struct CSSDisplaySetter: Sendable {
     let elementID: Int32
 
-    // Overloads for sub-enums
+    // MARK: - callAsFunction (type-safe; preferred for `.none` / keywords)
+
+    public func callAsFunction(_ value: CSS.Keyword.None) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    public func callAsFunction(_ value: CSS.Keyword.Auto) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    public func callAsFunction(_ value: CSS.Keyword.Global) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    public func callAsFunction(_ value: CSS.Display.Outside) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    public func callAsFunction(_ value: CSS.Display.Inside) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    public func callAsFunction(_ value: CSS.Display.ListItem) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    public func callAsFunction(_ value: CSS.Display.Internal) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    public func callAsFunction(_ value: CSS.Display.Box) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    public func callAsFunction(_ value: CSS.Display.Legacy) {
+      setProperty("display", value.staticRawValue)
+    }
+
+    // MARK: - @dynamicCallable (kept for multi-arg / string escape hatches)
+
     @_disfavoredOverload
     public func dynamicallyCall(withArguments args: [CSS.Display.Outside]) {
       guard let value = args.first else { return }
@@ -43,25 +93,25 @@
       setProperty("display", value.staticRawValue)
     }
 
-    // Overload for none keyword
+    @_disfavoredOverload
     public func dynamicallyCall(withArguments args: [CSS.Keyword.None]) {
       guard let value = args.first else { return }
       setProperty("display", value.staticRawValue)
     }
 
-    // Overload for auto keyword
+    @_disfavoredOverload
     public func dynamicallyCall(withArguments args: [CSS.Keyword.Auto]) {
       guard let value = args.first else { return }
       setProperty("display", value.staticRawValue)
     }
 
-    // Overload for global keywords
+    @_disfavoredOverload
     public func dynamicallyCall(withArguments args: [CSS.Keyword.Global]) {
       guard let value = args.first else { return }
       setProperty("display", value.staticRawValue)
     }
 
-    // Overload for arbitrary strings
+    @_disfavoredOverload
     public func dynamicallyCall(withArguments args: [String]) {
       guard let value = args.first else { return }
       setProperty("display", value)
