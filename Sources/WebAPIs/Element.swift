@@ -20,9 +20,22 @@
 
     public var textContent: String {
       get {
-        var buffer = [UInt8](repeating: 0, count: 1024)
-        let len = element_getTextContent(id, &buffer, 1024)
-        return len >= 0 ? String(decoding: buffer[0..<Int(len)], as: UTF8.self) : ""
+        // Grows to fit. The bridge answers a too-small buffer with
+        // `-(bytes.length + 1)`, a truncation signal that also carries the size
+        // needed — the old fixed 1024-byte buffer mapped that straight to "",
+        // so any value over 1KB read as empty. Tool transcripts are routinely
+        // several KB, which made real content indistinguishable from none.
+        var capacity = 1024
+        while true {
+          var buffer = [UInt8](repeating: 0, count: capacity + 1)
+          let len = element_getTextContent(id, &buffer, Int32(capacity))
+          if len >= 0 {
+            return String(decoding: buffer[0..<Int(len)], as: UTF8.self)
+          }
+          let needed = Int(-len) - 1
+          if needed <= capacity { return "" }
+          capacity = needed
+        }
       }
       set {
         var buffer = Array(newValue.utf8)
@@ -33,6 +46,13 @@
           }
         }
       }
+    }
+
+    /// Number of direct element children — the DOM's own `childElementCount`.
+    /// Text nodes are not counted, which is what makes it useful for "did
+    /// anything actually get built into this container".
+    public var childElementCount: Int {
+      Int(element_childElementCount(id))
     }
 
     public func querySelector(_ selector: String) -> DOM.Element? {
@@ -332,6 +352,9 @@
   func element_getTextContent(
     _ elementID: Int32, _ resultBuffer: UnsafeMutablePointer<UInt8>, _ maxLen: Int32
   ) -> Int32
+
+  @_extern(wasm, module: "env", name: "element_childElementCount")
+  func element_childElementCount(_ elementID: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "element_setTextContent")
   func element_setTextContent(_ elementID: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
