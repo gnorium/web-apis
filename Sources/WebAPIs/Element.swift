@@ -32,7 +32,14 @@
           if len >= 0 {
             return String(decoding: buffer[0..<Int(len)], as: UTF8.self)
           }
-          let needed = Int(-len) - 1
+          // The bridge truncates whenever the value is not STRICTLY shorter
+          // than the buffer — it needs the last byte for its terminator. Asking
+          // again for exactly `needed` is refused for the same reason, and the
+          // loop below then gave up and answered "". That is how every value of
+          // 1KB or more read as empty, and why a streamed reasoning block lost
+          // everything written before its latest chunk: the appender read the
+          // text so far, got nothing, and wrote the chunk alone.
+          let needed = Int(-len) - 1 + 16
           if needed <= capacity { return "" }
           capacity = needed
         }
