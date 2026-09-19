@@ -87,6 +87,9 @@
 
     public let performance = Performance()
     public let navigator = Navigator()
+    public var scrollX: Double {
+      window_scrollX()
+    }
     public var scrollY: Double {
       window_scrollY()
     }
@@ -357,6 +360,8 @@
   @_extern(wasm, module: "env", name: "canvas_toBlob")
   public func canvas_toBlob(_ canvasID: Int32, _ callbackID: Int32)
 
+  @_extern(wasm, module: "env", name: "window_scrollX")
+  func window_scrollX() -> Double
   @_extern(wasm, module: "env", name: "window_scrollY")
   func window_scrollY() -> Double
 
