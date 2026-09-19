@@ -56,6 +56,12 @@
       return ""
     }
 
+    /// `location.reload()`. Standard, and missing from the bridge until a page
+    /// needed to read itself again after work it had started finished.
+    public func reload() {
+      window_locationReload()
+    }
+
     public init() {}
   }
 

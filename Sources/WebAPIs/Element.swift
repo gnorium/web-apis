@@ -284,6 +284,29 @@
       }
     }
 
+    /// Fetch a fragment of HTML straight into this element.
+    ///
+    /// The document never enters wasm memory. `invokeWasmCallback` marshals its
+    /// string through one fixed temp pointer sized for event keys, so a large
+    /// fragment passed back that way lands on the Swift heap and the next call
+    /// dies with "memory access out of bounds". HTML destined for the DOM has
+    /// no business in wasm memory anyway — the callback carries only whether it
+    /// arrived.
+    public func loadFragment(_ url: String, _ callback: @escaping @Sendable (Bool) -> Void) {
+      let callbackID = CallbackRegistry.register { result in
+        callback(stringEquals(result.toString(), "ok"))
+      }
+
+      var urlBuffer = Array(url.utf8)
+      urlBuffer.append(0)
+      urlBuffer.withUnsafeBufferPointer { urlPtr in
+        urlPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) {
+          urlPointer in
+          element_loadFragment(id, urlPointer, Int32(url.utf8.count), Int32(callbackID))
+        }
+      }
+    }
+
     public var indeterminate: Bool {
       get { element_getIndeterminate(id) != 0 }
       set { element_setIndeterminate(id, newValue ? 1 : 0) }
@@ -434,6 +457,10 @@
   func element_setAttribute(
     _ elementID: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32,
     _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
+
+  @_extern(wasm, module: "env", name: "element_loadFragment")
+  func element_loadFragment(
+    _ elementID: Int32, _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ callbackID: Int32)
 
   @_extern(wasm, module: "env", name: "element_setInnerHTML")
   func element_setInnerHTML(_ elementID: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)

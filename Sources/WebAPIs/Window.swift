@@ -327,6 +327,9 @@
   @_extern(wasm, module: "env", name: "window_setLocationHref")
   func window_setLocationHref(_ hrefPointer: UnsafePointer<CChar>, _ hrefLen: Int32)
 
+  @_extern(wasm, module: "env", name: "window_locationReload")
+  func window_locationReload()
+
   @_extern(wasm, module: "env", name: "history_replaceURL")
   func history_replaceURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
 
