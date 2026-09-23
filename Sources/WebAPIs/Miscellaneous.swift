@@ -7,6 +7,29 @@
   public func clearTimeout(_ timerID: Int32) {
     window.clearTimeout(timerID)
   }
+
+  /// `encodeURIComponent`: every byte of the UTF-8 escaped as `%XX` except
+  /// the characters the standard leaves alone — letters, digits and
+  /// `- _ . ! ~ * ' ( )`. Pure Swift: the answer is fixed by the standard, so
+  /// there is nothing to ask the browser.
+  public func encodeURIComponent(_ string: String) -> String {
+    var bytes: [UInt8] = []
+    for byte in Array(string.utf8) {
+      let unreserved =
+        (byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122) || (byte >= 48 && byte <= 57)
+        || byte == 45 || byte == 95 || byte == 46 || byte == 33 || byte == 126 || byte == 42
+        || byte == 39 || byte == 40 || byte == 41
+      if unreserved {
+        bytes.append(byte)
+      } else {
+        let hex: [UInt8] = Array("0123456789ABCDEF".utf8)
+        bytes.append(37)
+        bytes.append(hex[Int(byte >> 4)])
+        bytes.append(hex[Int(byte & 0xF)])
+      }
+    }
+    return String(decoding: bytes, as: UTF8.self)
+  }
   /// Format an ISO 8601 date string to the user's local timezone and locale.
   /// Uses the browser's `Intl.DateTimeFormat` via JSContent bridge.
   /// Returns nil if the ISO string is invalid.
