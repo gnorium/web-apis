@@ -33,6 +33,12 @@
       case touchcancel = "touchcancel"
       case dblclick = "dblclick"
       case dragstart = "dragstart"
+      case drag = "drag"
+      case dragend = "dragend"
+      case dragenter = "dragenter"
+      case dragleave = "dragleave"
+      case dragover = "dragover"
+      case drop = "drop"
       case fullscreenchange = "fullscreenchange"
 
       public var staticString: StaticString {
@@ -66,6 +72,12 @@
         case .touchcancel: return "touchcancel"
         case .dblclick: return "dblclick"
         case .dragstart: return "dragstart"
+        case .drag: return "drag"
+        case .dragend: return "dragend"
+        case .dragenter: return "dragenter"
+        case .dragleave: return "dragleave"
+        case .dragover: return "dragover"
+        case .drop: return "drop"
         case .fullscreenchange: return "fullscreenchange"
         }
       }
@@ -100,6 +112,12 @@
     public static let touchcancel: StaticString = "touchcancel"
     public static let dblclick: StaticString = "dblclick"
     public static let dragstart: StaticString = "dragstart"
+    public static let drag: StaticString = "drag"
+    public static let dragend: StaticString = "dragend"
+    public static let dragenter: StaticString = "dragenter"
+    public static let dragleave: StaticString = "dragleave"
+    public static let dragover: StaticString = "dragover"
+    public static let drop: StaticString = "drop"
     public static let fullscreenchange: StaticString = "fullscreenchange"
 
     // Event instance properties (Placeholder for server-side event objects if needed)
@@ -150,6 +168,12 @@
       case touchcancel
       case dblclick
       case dragstart
+      case drag
+      case dragend
+      case dragenter
+      case dragleave
+      case dragover
+      case drop
       case fullscreenchange
       case error
       case contextmenu
@@ -185,6 +209,12 @@
         case .touchcancel: return "touchcancel"
         case .dblclick: return "dblclick"
         case .dragstart: return "dragstart"
+        case .drag: return "drag"
+        case .dragend: return "dragend"
+        case .dragenter: return "dragenter"
+        case .dragleave: return "dragleave"
+        case .dragover: return "dragover"
+        case .drop: return "drop"
         case .fullscreenchange: return "fullscreenchange"
         case .error: return "error"
         case .contextmenu: return "contextmenu"
@@ -246,6 +276,18 @@
           self = .touchcancel
         } else if stringEquals(rawValue, "dragstart") {
           self = .dragstart
+        } else if stringEquals(rawValue, "drag") {
+          self = .drag
+        } else if stringEquals(rawValue, "dragend") {
+          self = .dragend
+        } else if stringEquals(rawValue, "dragenter") {
+          self = .dragenter
+        } else if stringEquals(rawValue, "dragleave") {
+          self = .dragleave
+        } else if stringEquals(rawValue, "dragover") {
+          self = .dragover
+        } else if stringEquals(rawValue, "drop") {
+          self = .drop
         } else if stringEquals(rawValue, "dblclick") {
           self = .dblclick
         } else if stringEquals(rawValue, "fullscreenchange") {
@@ -290,6 +332,12 @@
         case .touchcancel: return "touchcancel"
         case .dblclick: return "dblclick"
         case .dragstart: return "dragstart"
+        case .drag: return "drag"
+        case .dragend: return "dragend"
+        case .dragenter: return "dragenter"
+        case .dragleave: return "dragleave"
+        case .dragover: return "dragover"
+        case .drop: return "drop"
         case .fullscreenchange: return "fullscreenchange"
         case .error: return "error"
         case .contextmenu: return "contextmenu"
@@ -326,6 +374,12 @@
     public static let touchcancel: StaticString = "touchcancel"
     public static let dblclick: StaticString = "dblclick"
     public static let dragstart: StaticString = "dragstart"
+    public static let drag: StaticString = "drag"
+    public static let dragend: StaticString = "dragend"
+    public static let dragenter: StaticString = "dragenter"
+    public static let dragleave: StaticString = "dragleave"
+    public static let dragover: StaticString = "dragover"
+    public static let drop: StaticString = "drop"
     public static let fullscreenchange: StaticString = "fullscreenchange"
     public static let error: StaticString = "error"
 
@@ -415,6 +469,28 @@
     public var button: Int {
       Int(event_button(payload.ptr, Int32(payload.len)))
     }
+
+    /// The modifier keys held when a keyboard or pointer event fired.
+    public var shiftKey: Bool {
+      event_modifierKey(payload.ptr, Int32(payload.len), 0) != 0
+    }
+
+    public var ctrlKey: Bool {
+      event_modifierKey(payload.ptr, Int32(payload.len), 1) != 0
+    }
+
+    public var altKey: Bool {
+      event_modifierKey(payload.ptr, Int32(payload.len), 2) != 0
+    }
+
+    public var metaKey: Bool {
+      event_modifierKey(payload.ptr, Int32(payload.len), 3) != 0
+    }
+
+    /// A drag event's data store.
+    public var dataTransfer: DataTransfer {
+      DataTransfer(payload)
+    }
   }
 
   // MARK: - Event Externs
@@ -468,6 +544,10 @@
 
   @_extern(wasm, module: "env", name: "event_button")
   func event_button(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
+
+  /// 0 shift, 1 ctrl, 2 alt, 3 meta.
+  @_extern(wasm, module: "env", name: "event_modifierKey")
+  func event_modifierKey(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ key: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "event_deltaY")
   func event_deltaY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
