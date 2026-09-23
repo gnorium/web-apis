@@ -307,6 +307,27 @@
       }
     }
 
+    /// The same, posting a form's fields as the fetch's body — what `fetch`
+    /// sends given `new FormData(form)` — so a text being edited is sent from
+    /// the page itself and never passes through wasm memory either.
+    public func loadFragment(
+      _ url: String, posting form: DOM.Element, _ callback: @escaping @Sendable (Bool) -> Void
+    ) {
+      let callbackID = CallbackRegistry.register { result in
+        callback(stringEquals(result.toString(), "ok"))
+      }
+
+      var urlBuffer = Array(url.utf8)
+      urlBuffer.append(0)
+      urlBuffer.withUnsafeBufferPointer { urlPtr in
+        urlPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) {
+          urlPointer in
+          element_loadFragmentPosting(
+            id, urlPointer, Int32(url.utf8.count), Int32(form.id), Int32(callbackID))
+        }
+      }
+    }
+
     public var indeterminate: Bool {
       get { element_getIndeterminate(id) != 0 }
       set { element_setIndeterminate(id, newValue ? 1 : 0) }
@@ -461,6 +482,11 @@
   @_extern(wasm, module: "env", name: "element_loadFragment")
   func element_loadFragment(
     _ elementID: Int32, _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "element_loadFragmentPosting")
+  func element_loadFragmentPosting(
+    _ elementID: Int32, _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ formID: Int32,
+    _ callbackID: Int32)
 
   @_extern(wasm, module: "env", name: "element_setInnerHTML")
   func element_setInnerHTML(_ elementID: Int32, _ pointer: UnsafePointer<CChar>, _ len: Int32)
