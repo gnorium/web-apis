@@ -10,6 +10,8 @@
       case submit = "submit"
       case focus = "focus"
       case blur = "blur"
+      case focusin = "focusin"
+      case focusout = "focusout"
       case keydown = "keydown"
       case keyup = "keyup"
       case keypress = "keypress"
@@ -49,6 +51,8 @@
         case .submit: return "submit"
         case .focus: return "focus"
         case .blur: return "blur"
+        case .focusin: return "focusin"
+        case .focusout: return "focusout"
         case .keydown: return "keydown"
         case .keyup: return "keyup"
         case .keypress: return "keypress"
@@ -90,6 +94,8 @@
     public static let submit: StaticString = "submit"
     public static let focus: StaticString = "focus"
     public static let blur: StaticString = "blur"
+    public static let focusin: StaticString = "focusin"
+    public static let focusout: StaticString = "focusout"
     public static let keydown: StaticString = "keydown"
     public static let keyup: StaticString = "keyup"
     public static let keypress: StaticString = "keypress"
@@ -145,6 +151,8 @@
       case submit
       case focus
       case blur
+      case focusin
+      case focusout
       case keydown
       case keyup
       case keypress
@@ -186,6 +194,8 @@
         case .submit: return "submit"
         case .focus: return "focus"
         case .blur: return "blur"
+        case .focusin: return "focusin"
+        case .focusout: return "focusout"
         case .keydown: return "keydown"
         case .keyup: return "keyup"
         case .keypress: return "keypress"
@@ -234,6 +244,10 @@
           self = .focus
         } else if stringEquals(rawValue, "blur") {
           self = .blur
+        } else if stringEquals(rawValue, "focusin") {
+          self = .focusin
+        } else if stringEquals(rawValue, "focusout") {
+          self = .focusout
         } else if stringEquals(rawValue, "keydown") {
           self = .keydown
         } else if stringEquals(rawValue, "keyup") {
@@ -309,6 +323,8 @@
         case .submit: return "submit"
         case .focus: return "focus"
         case .blur: return "blur"
+        case .focusin: return "focusin"
+        case .focusout: return "focusout"
         case .keydown: return "keydown"
         case .keyup: return "keyup"
         case .keypress: return "keypress"
@@ -352,6 +368,8 @@
     public static let submit: StaticString = "submit"
     public static let focus: StaticString = "focus"
     public static let blur: StaticString = "blur"
+    public static let focusin: StaticString = "focusin"
+    public static let focusout: StaticString = "focusout"
     public static let keydown: StaticString = "keydown"
     public static let keyup: StaticString = "keyup"
     public static let keypress: StaticString = "keypress"
