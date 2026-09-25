@@ -145,6 +145,12 @@
       element_focus(id)
     }
 
+    /// `focus(options)`: `preventScroll` keeps the page where it is, and
+    /// `focusVisible` asks for the focus ring whatever moved focus.
+    public func focus(_ options: DOM.FocusOptions) {
+      element_focusWithOptions(id, options.preventScroll ? 1 : 0, options.focusVisible ? 1 : 0)
+    }
+
     public func click() {
       element_click(id)
     }
@@ -445,6 +451,9 @@
 
   @_extern(wasm, module: "env", name: "element_focus")
   func element_focus(_ elementID: Int32)
+
+  @_extern(wasm, module: "env", name: "element_focusWithOptions")
+  func element_focusWithOptions(_ elementID: Int32, _ preventScroll: Int32, _ focusVisible: Int32)
 
   @_extern(wasm, module: "env", name: "element_scrollIntoView")
   func element_scrollIntoView(
