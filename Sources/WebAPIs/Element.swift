@@ -360,6 +360,13 @@
       element_insertBefore(id, newChild.id, reference.id)
     }
 
+    /// `Element.replaceChildren(...nodes)`: every child node goes (text too)
+    /// and `nodes` take their place, in order, moved from wherever they were.
+    public func replaceChildren(_ nodes: [DOM.Element]) {
+      setInnerHTML("")
+      for node in nodes { appendChild(node) }
+    }
+
     // Observe size changes via ResizeObserver. Callback receives (width, height) in CSS pixels.
     // JS encodes payload as "width,height" (e.g. "800.0,600.0").
     public func observeResize(_ callback: @escaping @Sendable (Double, Double) -> Void) {
