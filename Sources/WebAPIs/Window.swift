@@ -257,6 +257,25 @@
       window_scrollTo(x, y, Int32(behavior.rawValue))
     }
 
+    /// `window.open(url, target, "noopener")`: the URL in a new browsing
+    /// context named `target` ("_blank", a new tab), never given a handle on
+    /// this page.
+    public func open(_ url: String, target: String = "_blank") {
+      var urlBuffer = Array(url.utf8)
+      urlBuffer.append(0)
+      var targetBuffer = Array(target.utf8)
+      targetBuffer.append(0)
+      urlBuffer.withUnsafeBufferPointer { urlPtr in
+        urlPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { urlPointer in
+          targetBuffer.withUnsafeBufferPointer { targetPtr in
+            targetPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: targetBuffer.count) { targetPointer in
+              window_open(urlPointer, Int32(urlBuffer.count - 1), targetPointer, Int32(targetBuffer.count - 1))
+            }
+          }
+        }
+      }
+    }
+
     public func replaceURL(_ url: String) {
       var buffer = Array(url.utf8)
       buffer.append(0)
@@ -280,6 +299,10 @@
 
   @_extern(wasm, module: "env", name: "window_alert")
   func window_alert(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32)
+
+  @_extern(wasm, module: "env", name: "window_open")
+  func window_open(
+    _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ targetPointer: UnsafePointer<CChar>, _ targetLen: Int32)
 
   @_extern(wasm, module: "env", name: "window_confirm")
   func window_confirm(_ messagePointer: UnsafePointer<CChar>, _ messageLen: Int32) -> Int32
