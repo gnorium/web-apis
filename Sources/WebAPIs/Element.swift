@@ -381,6 +381,32 @@
       element_observeResize(Int32(id), Int32(callbackID))
     }
 
+    /// `IntersectionObserver` on this element: `callback` says, whenever it
+    /// changes, whether any of the element is in view, the viewport grown by
+    /// `rootMargin` (CSS margin syntax, "200px 0px"). An element in view with
+    /// no area there (clipped by a closed ancestor) is not. The handle stops
+    /// it (`unobserveIntersection`).
+    @discardableResult
+    public func observeIntersection(
+      rootMargin: String = "0px", _ callback: @escaping @Sendable (Bool) -> Void
+    ) -> Int32 {
+      let callbackID = CallbackRegistry.register { payload in
+        callback(stringEquals(payload.toString(), "1"))
+      }
+      var buffer = Array(rootMargin.utf8)
+      buffer.append(0)
+      return buffer.withUnsafeBufferPointer { ptr in
+        ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+          element_observeIntersection(id, pointer, Int32(buffer.count - 1), Int32(callbackID))
+        }
+      }
+    }
+
+    /// Stops an `observeIntersection`.
+    public func unobserveIntersection(_ handle: Int32) {
+      element_unobserveIntersection(handle)
+    }
+
     public func setInnerHTML(_ html: String) {
       var buffer = Array(html.utf8)
       buffer.append(0)
@@ -554,6 +580,14 @@
 
   @_extern(wasm, module: "env", name: "element_observeResize")
   func element_observeResize(_ elementID: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "element_observeIntersection")
+  func element_observeIntersection(
+    _ elementID: Int32, _ marginPointer: UnsafePointer<CChar>, _ marginLen: Int32, _ callbackID: Int32
+  ) -> Int32
+
+  @_extern(wasm, module: "env", name: "element_unobserveIntersection")
+  func element_unobserveIntersection(_ handle: Int32)
 
   @_extern(wasm, module: "env", name: "element_getInputValue")
   func element_getInputValue(_ elementID: Int32, _ buffer: UnsafeMutablePointer<UInt8>, _ maxLen: Int32) -> Int32
