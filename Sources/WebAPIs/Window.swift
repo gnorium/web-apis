@@ -327,6 +327,12 @@
   @_extern(wasm, module: "env", name: "getLocationSearch")
   func window_getLocationSearch(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
 
+  @_extern(wasm, module: "env", name: "getLocationHash")
+  func window_getLocationHash(_ buffer: UnsafeMutablePointer<Int8>, _ bufferLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_setLocationHash")
+  func window_setLocationHash(_ hashPointer: UnsafePointer<CChar>, _ hashLen: Int32)
+
   @_extern(wasm, module: "env", name: "window_setLocationHref")
   func window_setLocationHref(_ hrefPointer: UnsafePointer<CChar>, _ hrefLen: Int32)
 

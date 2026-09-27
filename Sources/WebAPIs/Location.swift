@@ -56,6 +56,34 @@
       return ""
     }
 
+    /// `location.hash`: the fragment, with its "#", or "" when there is
+    /// none. Setting it moves to the element it names, as a link to it does,
+    /// and puts it in the history.
+    public var hash: String {
+      get {
+        let bufferSize = 1024
+        let buffer = UnsafeMutablePointer<Int8>.allocate(capacity: bufferSize)
+        defer { buffer.deallocate() }
+        let len = window_getLocationHash(buffer, Int32(bufferSize))
+        if len > 0 {
+          let bytes = UnsafeBufferPointer(start: buffer, count: Int(len)).map {
+            UInt8(bitPattern: $0)
+          }
+          return String(decoding: bytes, as: UTF8.self)
+        }
+        return ""
+      }
+      set {
+        var buffer = Array(newValue.utf8)
+        buffer.append(0)
+        buffer.withUnsafeBufferPointer { ptr in
+          ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
+            window_setLocationHash(pointer, Int32(buffer.count - 1))
+          }
+        }
+      }
+    }
+
     /// `location.reload()`. Standard, and missing from the bridge until a page
     /// needed to read itself again after work it had started finished.
     public func reload() {
