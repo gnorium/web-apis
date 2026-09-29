@@ -176,6 +176,13 @@
       setPropertyValue(value.rawValue)
     }
 
+    // Concrete overload for CSS.Float
+    @_disfavoredOverload
+    public func dynamicallyCall(withArguments args: [CSS.Float]) {
+      guard let value = args.first else { return }
+      setPropertyValue(value.rawValue)
+    }
+
     // Concrete overload for CSS.Cursor
     @_disfavoredOverload
     public func dynamicallyCall(withArguments args: [CSS.Cursor]) {

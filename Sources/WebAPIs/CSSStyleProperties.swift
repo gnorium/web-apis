@@ -999,6 +999,15 @@
       setProperty(.flexDirection, value)
     }
 
+    public func float(_ value: CSS.Float) {
+      setProperty(.float, value.rawValue)
+    }
+
+    @_disfavoredOverload
+    public func float(_ value: String) {
+      setProperty(.float, value)
+    }
+
     public func flex(_ value: Int) {
       setProperty(.flex, intToString(value))
     }
