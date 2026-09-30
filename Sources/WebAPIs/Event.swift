@@ -446,6 +446,12 @@
       event_stopPropagation(payload.ptr, Int32(payload.len))
     }
 
+    /// `Event.isTrusted`: true for an event the browser raised from the
+    /// reader's action, false for one the page dispatched itself.
+    public var isTrusted: Bool {
+      event_isTrusted(payload.ptr, Int32(payload.len)) != 0
+    }
+
     public var key: String {
       var buffer = [UInt8](repeating: 0, count: 64)
       let len = event_getKey(payload.ptr, Int32(payload.len), &buffer, 64)
@@ -527,6 +533,9 @@
 
   @_extern(wasm, module: "env", name: "event_preventDefault")
   func event_preventDefault(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32)
+
+  @_extern(wasm, module: "env", name: "event_isTrusted")
+  func event_isTrusted(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "event_stopPropagation")
   func event_stopPropagation(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32)
