@@ -22,6 +22,8 @@ import WebTypes
           return HTML.HTMLButtonElement(id: id)
         } else if stringEquals(tagName, "OPTION") {
           return HTML.HTMLOptionElement(id: id)
+        } else if stringEquals(tagName, "FORM") {
+          return HTML.HTMLFormElement(id: id)
         } else {
           return HTML.HTMLElement(id: id)
         }
