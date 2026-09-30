@@ -410,7 +410,7 @@
     /// this calls event_detail() to retrieve the real .detail from the JS events map.
     /// Falls back to the parsed payload string for non-CustomEvent callbacks.
     public var detail: String {
-      // First try the JS bridge — works for CustomEvents stored in the events map
+      // First try the JS bridge—works for CustomEvents stored in the events map
       let bridgeDetail = payload.detail
       if !bridgeDetail.isEmpty {
         return bridgeDetail

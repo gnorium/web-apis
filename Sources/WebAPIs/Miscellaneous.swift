@@ -9,7 +9,7 @@
   }
 
   /// `encodeURIComponent`: every byte of the UTF-8 escaped as `%XX` except
-  /// the characters the standard leaves alone — letters, digits and
+  /// the characters the standard leaves alone—letters, digits and
   /// `- _ . ! ~ * ' ( )`. Pure Swift: the answer is fixed by the standard, so
   /// there is nothing to ask the browser.
   public func encodeURIComponent(_ string: String) -> String {

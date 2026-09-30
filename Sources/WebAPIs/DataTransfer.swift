@@ -5,7 +5,7 @@
 
   /// The data a drag carries, as `DragEvent.dataTransfer` holds it: read and
   /// written through the event the drag dispatched, while that event is being
-  /// handled — which is the only time the browser lets either happen.
+  /// handled—which is the only time the browser lets either happen.
   public struct DataTransfer: @unchecked Sendable {
     let payload: CallbackString
 

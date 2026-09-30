@@ -18,7 +18,7 @@
     }
 
     // Coordinates of the first touch point (touches[0] / changedTouches[0]).
-    // The JS bridge already resolves these from the touch list — see loader.js event_clientX.
+    // The JS bridge already resolves these from the touch list—see loader.js event_clientX.
     public var clientX: Double {
       event.clientX
     }

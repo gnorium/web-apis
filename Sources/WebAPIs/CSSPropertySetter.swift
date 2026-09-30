@@ -158,7 +158,7 @@
       }
     }
 
-    // CSS.Display / CSS.Overflow removed — use CSSDisplaySetter / CSSOverflowSetter instead
+    // CSS.Display / CSS.Overflow removed—use CSSDisplaySetter / CSSOverflowSetter instead
 
     // CSS.AlignItems removed - use CSSAlignItemsSetter instead
 

@@ -22,7 +22,7 @@
       get {
         // Grows to fit. The bridge answers a too-small buffer with
         // `-(bytes.length + 1)`, a truncation signal that also carries the size
-        // needed — the old fixed 1024-byte buffer mapped that straight to "",
+        // needed—the old fixed 1024-byte buffer mapped that straight to "",
         // so any value over 1KB read as empty. Tool transcripts are routinely
         // several KB, which made real content indistinguishable from none.
         var capacity = 1024
@@ -33,7 +33,7 @@
             return String(decoding: buffer[0..<Int(len)], as: UTF8.self)
           }
           // The bridge truncates whenever the value is not STRICTLY shorter
-          // than the buffer — it needs the last byte for its terminator. Asking
+          // than the buffer—it needs the last byte for its terminator. Asking
           // again for exactly `needed` is refused for the same reason, and the
           // loop below then gave up and answered "". That is how every value of
           // 1KB or more read as empty, and why a streamed reasoning block lost
@@ -55,7 +55,7 @@
       }
     }
 
-    /// Number of direct element children — the DOM's own `childElementCount`.
+    /// Number of direct element children—the DOM's own `childElementCount`.
     /// Text nodes are not counted, which is what makes it useful for "did
     /// anything actually get built into this container".
     public var childElementCount: Int {
@@ -296,7 +296,7 @@
     /// string through one fixed temp pointer sized for event keys, so a large
     /// fragment passed back that way lands on the Swift heap and the next call
     /// dies with "memory access out of bounds". HTML destined for the DOM has
-    /// no business in wasm memory anyway — the callback carries only whether it
+    /// no business in wasm memory anyway—the callback carries only whether it
     /// arrived.
     public func loadFragment(_ url: String, _ callback: @escaping @Sendable (Bool) -> Void) {
       let callbackID = CallbackRegistry.register { result in
@@ -313,8 +313,8 @@
       }
     }
 
-    /// The same, posting a form's fields as the fetch's body — what `fetch`
-    /// sends given `new FormData(form)` — so a text being edited is sent from
+    /// The same, posting a form's fields as the fetch's body—what `fetch`
+    /// sends given `new FormData(form)`—so a text being edited is sent from
     /// the page itself and never passes through wasm memory either.
     public func loadFragment(
       _ url: String, posting form: DOM.Element, _ callback: @escaping @Sendable (Bool) -> Void

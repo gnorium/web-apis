@@ -11,7 +11,7 @@
   /// ```
   ///
   /// Prefer `callAsFunction` overloads (not only `@dynamicCallable`) so
-  /// `.none` resolves as `CSS.Keyword.None` — Embedded's dynamicCallable
+  /// `.none` resolves as `CSS.Keyword.None`—Embedded's dynamicCallable
   /// path often loses that context and collides with `Optional.none`.
   @dynamicCallable
   public struct CSSDisplaySetter: Sendable {
