@@ -43,6 +43,21 @@
     /// `getMinutes()`: the minute in the reader's zone.
     public var minutes: Int { Int(date_getLocalField(time, 6)) }
 
+    /// Minutes a zone's clocks are ahead of UTC at a moment (milliseconds
+    /// since the epoch): +330 for Asia/Kolkata, −300 or −240 for
+    /// America/New_York by the date—read from `Intl.DateTimeFormat` with
+    /// `timeZone`, the browser's own IANA database. 0 for a zone it does not
+    /// know.
+    public static func offsetMinutes(zone: String, at time: Double) -> Int {
+      var bytes = Array(zone.utf8)
+      bytes.append(0)
+      return bytes.withUnsafeBufferPointer { buffer in
+        buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: bytes.count) { pointer in
+          Int(intl_zoneOffset(pointer, Int32(bytes.count - 1), time))
+        }
+      }
+    }
+
     /// `Intl.DateTimeFormat().resolvedOptions().timeZone`: the reader's zone
     /// by its IANA name ("Asia/Kolkata"); empty where the browser names none.
     public static var resolvedTimeZone: String {
@@ -54,6 +69,9 @@
       return String(decoding: buffer[0..<Int(length)], as: UTF8.self)
     }
   }
+
+  @_extern(wasm, module: "env", name: "intl_zoneOffset")
+  private func intl_zoneOffset(_ zone: UnsafePointer<CChar>, _ zoneLen: Int32, _ time: Double) -> Int32
 
   @_extern(wasm, module: "env", name: "date_localTime")
   private func date_localTime(_ year: Int32, _ month: Int32, _ day: Int32, _ hours: Int32, _ minutes: Int32) -> Double
