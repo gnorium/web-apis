@@ -47,6 +47,11 @@
         return ""
       }
 
+      /// A `blob:` URL for a blob or a file, valid until revoked.
+      public static func createObjectURL(_ blob: Blob) -> String {
+        createObjectURL(blob.id)
+      }
+
       public static func revokeObjectURL(_ url: String) {
         var buffer = Array(url.utf8)
         buffer.append(0)
