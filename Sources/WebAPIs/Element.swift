@@ -299,7 +299,7 @@
     /// no business in wasm memory anyway—the callback carries only whether it
     /// arrived.
     public func loadFragment(_ url: String, _ callback: @escaping @Sendable (Bool) -> Void) {
-      let callbackID = CallbackRegistry.register { result in
+      let callbackID = CallbackRegistry.registerOnce { result in
         callback(stringEquals(result.toString(), "ok"))
       }
 
@@ -319,7 +319,7 @@
     public func loadFragment(
       _ url: String, posting form: DOM.Element, _ callback: @escaping @Sendable (Bool) -> Void
     ) {
-      let callbackID = CallbackRegistry.register { result in
+      let callbackID = CallbackRegistry.registerOnce { result in
         callback(stringEquals(result.toString(), "ok"))
       }
 

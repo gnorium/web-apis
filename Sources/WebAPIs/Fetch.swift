@@ -38,7 +38,7 @@ import WebTypes
     /// `fetch(url, init)`, then `response.text()`: the callback has the
     /// status and the body.
     public func fetch(_ url: String, _ options: RequestInit, _ callback: @escaping @Sendable (Response) -> Void) {
-      let callbackID = CallbackRegistry.register { result in
+      let callbackID = CallbackRegistry.registerOnce { result in
         // "<status>\n<body>"
         var status = 0
         var index = 0

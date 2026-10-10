@@ -191,7 +191,7 @@
       _ url: String, method: String = "GET", body: String? = nil,
       _ callback: @escaping @Sendable (FetchResponse) -> Void
     ) {
-      let callbackID = CallbackRegistry.register { result in
+      let callbackID = CallbackRegistry.registerOnce { result in
         callback(FetchResponse(jsonString: result.toString()))
       }
 
@@ -231,7 +231,7 @@
 
     @discardableResult
     public func requestAnimationFrame(_ callback: @escaping @Sendable () -> Void) -> Int32 {
-      let callbackID = CallbackRegistry.register { _ in
+      let callbackID = CallbackRegistry.registerOnce { _ in
         callback()
       }
       return window_requestAnimationFrame(Int32(callbackID))
@@ -243,7 +243,7 @@
 
     @discardableResult
     public func setTimeout(_ ms: Double, _ callback: @escaping @Sendable () -> Void) -> Int32 {
-      let callbackID = CallbackRegistry.register { _ in
+      let callbackID = CallbackRegistry.registerOnce { _ in
         callback()
       }
       return window_setTimeout(ms, Int32(callbackID))
