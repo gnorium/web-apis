@@ -29,23 +29,25 @@
 
       /// `nextNode()`: the next node shown, nil after the last.
       public func nextNode() -> DOM.Node? {
-        node(treeWalker_nextNode(handle))
+        bridgedNode(treeWalker_nextNode(handle))
       }
 
       /// `currentNode`: where the walker stands (the root before the first
       /// `nextNode()`).
       public var currentNode: DOM.Node? {
-        node(treeWalker_currentNode(handle))
+        bridgedNode(treeWalker_currentNode(handle))
       }
+    }
+  }
 
-      private func node(_ id: Int32) -> DOM.Node? {
-        guard id >= 0 else { return nil }
-        switch node_nodeType(id) {
-        case 1: return ElementFactory.create(id: id)
-        case 3: return DOM.Text(id: id)
-        default: return DOM.Node(id: id)
-        }
-      }
+  /// A node the bridge handed back by id (-1: none), as the kind it is: a
+  /// text node as a `DOM.Text`, an element as the element it is.
+  func bridgedNode(_ id: Int32) -> DOM.Node? {
+    guard id >= 0 else { return nil }
+    switch node_nodeType(id) {
+    case 1: return ElementFactory.create(id: id)
+    case 3: return DOM.Text(id: id)
+    default: return DOM.Node(id: id)
     }
   }
 

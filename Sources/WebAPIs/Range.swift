@@ -34,6 +34,17 @@
       public var collapsed: Bool {
         range_collapsed(handle) != 0
       }
+
+      /// `toString()`: the text it spans, its text nodes' text in document
+      /// order.
+      public func toString() -> String {
+        let length = Int(range_toStringLength(handle))
+        guard length > 0 else { return "" }
+        // One byte more for the terminator the copy writes.
+        var buffer = [UInt8](repeating: 0, count: length + 1)
+        let written = Int(range_toStringCopy(handle, &buffer, Int32(length + 1)))
+        return String(decoding: buffer[0..<min(written, length)], as: UTF8.self)
+      }
     }
   }
 
@@ -55,6 +66,15 @@
 
   @_extern(wasm, module: "env", name: "range_collapsed")
   func range_collapsed(_ handle: Int32) -> Int32
+
+  /// The text a Range spans, its length in UTF-8 bytes.
+  @_extern(wasm, module: "env", name: "range_toStringLength")
+  func range_toStringLength(_ handle: Int32) -> Int32
+
+  /// Copies the text a Range spans as UTF-8 into `buffer`, at most `max - 1`
+  /// bytes and a terminator; returns how many text bytes it wrote.
+  @_extern(wasm, module: "env", name: "range_toStringCopy")
+  func range_toStringCopy(_ handle: Int32, _ buffer: UnsafeMutablePointer<UInt8>, _ max: Int32) -> Int32
 
   /// Lets go of a Range, TreeWalker or Highlight the bridge holds for us.
   @_extern(wasm, module: "env", name: "domObject_release")

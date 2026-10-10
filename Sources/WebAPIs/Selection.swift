@@ -1,4 +1,7 @@
 #if CLIENT
+  import DOMBuilder
+  import WebTypes
+
   /// `Selection`: the text range the reader has selected, as
   /// `window.getSelection()` returns it, read when asked.
   public struct Selection {
@@ -13,6 +16,41 @@
     /// `Selection.rangeCount`: how many ranges it holds.
     public var rangeCount: Int {
       Int(window_selectionRangeCount())
+    }
+
+    /// `Selection.anchorNode`: the node the selection starts from (where
+    /// it was begun), nil when there is none.
+    public var anchorNode: DOM.Node? {
+      bridgedNode(window_selectionAnchorNode())
+    }
+
+    /// `Selection.anchorOffset`: the anchor's place in its node (UTF-16
+    /// code units in a text node, children in an element).
+    public var anchorOffset: Int {
+      Int(window_selectionAnchorOffset())
+    }
+
+    /// `Selection.focusNode`: the node the selection ends in (where the
+    /// caret is), nil when there is none.
+    public var focusNode: DOM.Node? {
+      bridgedNode(window_selectionFocusNode())
+    }
+
+    /// `Selection.focusOffset`: the focus's place in its node.
+    public var focusOffset: Int {
+      Int(window_selectionFocusOffset())
+    }
+
+    /// `Selection.setBaseAndExtent(anchorNode, anchorOffset, focusNode,
+    /// focusOffset)`: the selection made to run from the anchor to the
+    /// focus.
+    public func setBaseAndExtent(_ anchorNode: DOM.Node, _ anchorOffset: Int, _ focusNode: DOM.Node, _ focusOffset: Int) {
+      window_selectionSetBaseAndExtent(anchorNode.id, Int32(anchorOffset), focusNode.id, Int32(focusOffset))
+    }
+
+    /// `Selection.collapse(node, offset)`: a caret at the point.
+    public func collapse(_ node: DOM.Node, _ offset: Int) {
+      window_selectionCollapse(node.id, Int32(offset))
     }
 
     /// `Selection.toString()`: the selected text.
@@ -39,6 +77,24 @@
 
   @_extern(wasm, module: "env", name: "window_selectionIsCollapsed")
   func window_selectionIsCollapsed() -> Int32
+
+  @_extern(wasm, module: "env", name: "window_selectionAnchorNode")
+  func window_selectionAnchorNode() -> Int32
+
+  @_extern(wasm, module: "env", name: "window_selectionAnchorOffset")
+  func window_selectionAnchorOffset() -> Int32
+
+  @_extern(wasm, module: "env", name: "window_selectionFocusNode")
+  func window_selectionFocusNode() -> Int32
+
+  @_extern(wasm, module: "env", name: "window_selectionFocusOffset")
+  func window_selectionFocusOffset() -> Int32
+
+  @_extern(wasm, module: "env", name: "window_selectionSetBaseAndExtent")
+  func window_selectionSetBaseAndExtent(_ anchorID: Int32, _ anchorOffset: Int32, _ focusID: Int32, _ focusOffset: Int32)
+
+  @_extern(wasm, module: "env", name: "window_selectionCollapse")
+  func window_selectionCollapse(_ nodeID: Int32, _ offset: Int32)
 
   @_extern(wasm, module: "env", name: "window_selectionRangeCount")
   func window_selectionRangeCount() -> Int32
