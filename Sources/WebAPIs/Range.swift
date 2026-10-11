@@ -35,6 +35,18 @@
         range_collapsed(handle) != 0
       }
 
+      /// `getBoundingClientRect()`: the box around what it spans; for a
+      /// range over a line break alone, the line it ends (the first of its
+      /// client rects with a height). Nil when the bridge holds no range.
+      public func getBoundingClientRect() -> DOM.Rect? {
+        let buffer = UnsafeMutablePointer<Double>.allocate(capacity: 8)
+        defer { buffer.deallocate() }
+        guard range_getBoundingClientRect(handle, buffer) != 0 else { return nil }
+        return DOM.Rect(
+          x: buffer[0], y: buffer[1], width: buffer[2], height: buffer[3],
+          top: buffer[4], right: buffer[5], bottom: buffer[6], left: buffer[7])
+      }
+
       /// `toString()`: the text it spans, its text nodes' text in document
       /// order.
       public func toString() -> String {
@@ -63,6 +75,9 @@
 
   @_extern(wasm, module: "env", name: "range_setEnd")
   func range_setEnd(_ handle: Int32, _ nodeID: Int32, _ offset: Int32)
+
+  @_extern(wasm, module: "env", name: "range_getBoundingClientRect")
+  func range_getBoundingClientRect(_ handle: Int32, _ buffer: UnsafeMutablePointer<Double>) -> Int32
 
   @_extern(wasm, module: "env", name: "range_collapsed")
   func range_collapsed(_ handle: Int32) -> Int32
