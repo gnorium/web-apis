@@ -28,6 +28,9 @@
       case unload = "unload"
       case wheel = "wheel"
       case transitionend = "transitionend"
+      case transitioncancel = "transitioncancel"
+      case transitionrun = "transitionrun"
+      case transitionstart = "transitionstart"
       case toggle = "toggle"
       case touchstart = "touchstart"
       case touchend = "touchend"
@@ -69,6 +72,9 @@
         case .unload: return "unload"
         case .wheel: return "wheel"
         case .transitionend: return "transitionend"
+        case .transitioncancel: return "transitioncancel"
+        case .transitionrun: return "transitionrun"
+        case .transitionstart: return "transitionstart"
         case .toggle: return "toggle"
         case .touchstart: return "touchstart"
         case .touchend: return "touchend"
@@ -111,6 +117,9 @@
     public static let load: StaticString = "load"
     public static let unload: StaticString = "unload"
     public static let transitionend: StaticString = "transitionend"
+    public static let transitioncancel: StaticString = "transitioncancel"
+    public static let transitionrun: StaticString = "transitionrun"
+    public static let transitionstart: StaticString = "transitionstart"
     public static let toggle: StaticString = "toggle"
     public static let touchstart: StaticString = "touchstart"
     public static let touchend: StaticString = "touchend"
@@ -169,6 +178,9 @@
       case unload
       case wheel
       case transitionend
+      case transitioncancel
+      case transitionrun
+      case transitionstart
       case toggle
       case touchstart
       case touchend
@@ -212,6 +224,9 @@
         case .unload: return "unload"
         case .wheel: return "wheel"
         case .transitionend: return "transitionend"
+        case .transitioncancel: return "transitioncancel"
+        case .transitionrun: return "transitionrun"
+        case .transitionstart: return "transitionstart"
         case .toggle: return "toggle"
         case .touchstart: return "touchstart"
         case .touchend: return "touchend"
@@ -278,6 +293,12 @@
           self = .unload
         } else if stringEquals(rawValue, "transitionend") {
           self = .transitionend
+        } else if stringEquals(rawValue, "transitioncancel") {
+          self = .transitioncancel
+        } else if stringEquals(rawValue, "transitionrun") {
+          self = .transitionrun
+        } else if stringEquals(rawValue, "transitionstart") {
+          self = .transitionstart
         } else if stringEquals(rawValue, "toggle") {
           self = .toggle
         } else if stringEquals(rawValue, "touchstart") {
@@ -341,6 +362,9 @@
         case .unload: return "unload"
         case .wheel: return "wheel"
         case .transitionend: return "transitionend"
+        case .transitioncancel: return "transitioncancel"
+        case .transitionrun: return "transitionrun"
+        case .transitionstart: return "transitionstart"
         case .toggle: return "toggle"
         case .touchstart: return "touchstart"
         case .touchend: return "touchend"
@@ -385,6 +409,9 @@
     public static let load: StaticString = "load"
     public static let unload: StaticString = "unload"
     public static let transitionend: StaticString = "transitionend"
+    public static let transitioncancel: StaticString = "transitioncancel"
+    public static let transitionrun: StaticString = "transitionrun"
+    public static let transitionstart: StaticString = "transitionstart"
     public static let toggle: StaticString = "toggle"
     public static let touchstart: StaticString = "touchstart"
     public static let touchend: StaticString = "touchend"
@@ -461,6 +488,17 @@
       return ""
     }
 
+    /// `TransitionEvent.propertyName`: the CSS property whose transition
+    /// ran, ended or was cancelled ("transform"); "" for any other event.
+    public var propertyName: String {
+      var buffer = [UInt8](repeating: 0, count: 64)
+      let len = event_propertyName(payload.ptr, Int32(payload.len), &buffer, 64)
+      if len > 0 {
+        return String(decoding: buffer[0..<Int(len)], as: UTF8.self)
+      }
+      return ""
+    }
+
     public var target: DOM.Element? {
       let id = event_target(payload.ptr, Int32(payload.len))
       return id >= 0 ? ElementFactory.create(id: id) : nil
@@ -522,6 +560,12 @@
   @_extern(wasm, module: "env", name: "event_key")
   func event_key(
     _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<CChar>,
+    _ bufferLen: Int32
+  ) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_propertyName")
+  func event_propertyName(
+    _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<UInt8>,
     _ bufferLen: Int32
   ) -> Int32
 
