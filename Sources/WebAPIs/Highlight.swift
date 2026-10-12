@@ -23,6 +23,11 @@
       highlight_add(handle, range.handle)
     }
 
+    /// `delete(range)`.
+    public func delete(_ range: DOM.Range) {
+      highlight_delete(handle, range.handle)
+    }
+
     /// `clear()`.
     public func clear() {
       highlight_clear(handle)
@@ -77,6 +82,9 @@
 
   @_extern(wasm, module: "env", name: "highlight_add")
   func highlight_add(_ handle: Int32, _ rangeHandle: Int32)
+
+  @_extern(wasm, module: "env", name: "highlight_delete")
+  func highlight_delete(_ handle: Int32, _ rangeHandle: Int32)
 
   @_extern(wasm, module: "env", name: "highlight_clear")
   func highlight_clear(_ handle: Int32)
