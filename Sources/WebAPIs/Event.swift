@@ -28,6 +28,10 @@
       case unload = "unload"
       case wheel = "wheel"
       case transitionend = "transitionend"
+      case pointerdown = "pointerdown"
+      case pointerup = "pointerup"
+      case pointermove = "pointermove"
+      case pointercancel = "pointercancel"
       case transitioncancel = "transitioncancel"
       case transitionrun = "transitionrun"
       case transitionstart = "transitionstart"
@@ -72,6 +76,10 @@
         case .unload: return "unload"
         case .wheel: return "wheel"
         case .transitionend: return "transitionend"
+        case .pointerdown: return "pointerdown"
+        case .pointerup: return "pointerup"
+        case .pointermove: return "pointermove"
+        case .pointercancel: return "pointercancel"
         case .transitioncancel: return "transitioncancel"
         case .transitionrun: return "transitionrun"
         case .transitionstart: return "transitionstart"
@@ -117,6 +125,10 @@
     public static let load: StaticString = "load"
     public static let unload: StaticString = "unload"
     public static let transitionend: StaticString = "transitionend"
+    public static let pointerdown: StaticString = "pointerdown"
+    public static let pointerup: StaticString = "pointerup"
+    public static let pointermove: StaticString = "pointermove"
+    public static let pointercancel: StaticString = "pointercancel"
     public static let transitioncancel: StaticString = "transitioncancel"
     public static let transitionrun: StaticString = "transitionrun"
     public static let transitionstart: StaticString = "transitionstart"
@@ -178,6 +190,10 @@
       case unload
       case wheel
       case transitionend
+      case pointerdown
+      case pointerup
+      case pointermove
+      case pointercancel
       case transitioncancel
       case transitionrun
       case transitionstart
@@ -224,6 +240,10 @@
         case .unload: return "unload"
         case .wheel: return "wheel"
         case .transitionend: return "transitionend"
+        case .pointerdown: return "pointerdown"
+        case .pointerup: return "pointerup"
+        case .pointermove: return "pointermove"
+        case .pointercancel: return "pointercancel"
         case .transitioncancel: return "transitioncancel"
         case .transitionrun: return "transitionrun"
         case .transitionstart: return "transitionstart"
@@ -293,6 +313,14 @@
           self = .unload
         } else if stringEquals(rawValue, "transitionend") {
           self = .transitionend
+        } else if stringEquals(rawValue, "pointerdown") {
+          self = .pointerdown
+        } else if stringEquals(rawValue, "pointerup") {
+          self = .pointerup
+        } else if stringEquals(rawValue, "pointermove") {
+          self = .pointermove
+        } else if stringEquals(rawValue, "pointercancel") {
+          self = .pointercancel
         } else if stringEquals(rawValue, "transitioncancel") {
           self = .transitioncancel
         } else if stringEquals(rawValue, "transitionrun") {
@@ -362,6 +390,10 @@
         case .unload: return "unload"
         case .wheel: return "wheel"
         case .transitionend: return "transitionend"
+        case .pointerdown: return "pointerdown"
+        case .pointerup: return "pointerup"
+        case .pointermove: return "pointermove"
+        case .pointercancel: return "pointercancel"
         case .transitioncancel: return "transitioncancel"
         case .transitionrun: return "transitionrun"
         case .transitionstart: return "transitionstart"
@@ -409,6 +441,10 @@
     public static let load: StaticString = "load"
     public static let unload: StaticString = "unload"
     public static let transitionend: StaticString = "transitionend"
+    public static let pointerdown: StaticString = "pointerdown"
+    public static let pointerup: StaticString = "pointerup"
+    public static let pointermove: StaticString = "pointermove"
+    public static let pointercancel: StaticString = "pointercancel"
     public static let transitioncancel: StaticString = "transitioncancel"
     public static let transitionrun: StaticString = "transitionrun"
     public static let transitionstart: StaticString = "transitionstart"
@@ -488,6 +524,17 @@
       return ""
     }
 
+    /// `PointerEvent.pointerType`: "mouse", "pen" or "touch"; "" for any
+    /// other event.
+    public var pointerType: String {
+      var buffer = [UInt8](repeating: 0, count: 16)
+      let len = event_pointerType(payload.ptr, Int32(payload.len), &buffer, 16)
+      if len > 0 {
+        return String(decoding: buffer[0..<Int(len)], as: UTF8.self)
+      }
+      return ""
+    }
+
     /// `TransitionEvent.propertyName`: the CSS property whose transition
     /// ran, ended or was cancelled ("transform"); "" for any other event.
     public var propertyName: String {
@@ -560,6 +607,12 @@
   @_extern(wasm, module: "env", name: "event_key")
   func event_key(
     _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<CChar>,
+    _ bufferLen: Int32
+  ) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_pointerType")
+  func event_pointerType(
+    _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<UInt8>,
     _ bufferLen: Int32
   ) -> Int32
 
