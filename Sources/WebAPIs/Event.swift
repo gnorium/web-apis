@@ -579,6 +579,13 @@
       Int(event_button(payload.ptr, Int32(payload.len)))
     }
 
+    /// `UIEvent.detail` as a number: a click's count on a mouse event (1, 2
+    /// for a double-click, 3 for a triple); 0 for any other event. (`detail`
+    /// is a custom event's string.)
+    public var clickCount: Int {
+      Int(event_clickCount(payload.ptr, Int32(payload.len)))
+    }
+
     /// The modifier keys held when a keyboard or pointer event fired.
     public var shiftKey: Bool {
       event_modifierKey(payload.ptr, Int32(payload.len), 0) != 0
@@ -668,6 +675,9 @@
 
   @_extern(wasm, module: "env", name: "event_button")
   func event_button(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_clickCount")
+  func event_clickCount(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
 
   /// 0 shift, 1 ctrl, 2 alt, 3 meta.
   @_extern(wasm, module: "env", name: "event_modifierKey")

@@ -3,6 +3,11 @@
   import WebTypes
 
   extension DOM.Text {
+    /// `CharacterData.length`: its text's length in UTF-16 code units.
+    public var length: Int {
+      Int(characterData_length(id))
+    }
+
     /// `CharacterData.replaceData(offset, count, data)`: `count` UTF-16
     /// code units from `offset` replaced with `data`. A selection in the
     /// node keeps its place as the DOM moves it; nothing enters an
@@ -33,6 +38,9 @@
       }
     }
   }
+
+  @_extern(wasm, module: "env", name: "characterData_length")
+  func characterData_length(_ nodeID: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "characterData_replaceData")
   func characterData_replaceData(
