@@ -575,6 +575,15 @@
       event_deltaY(payload.ptr, Int32(payload.len))
     }
 
+    /// WebKit's `GestureEvent.scale` (`gesturestart`, `gesturechange`,
+    /// `gestureend`): a trackpad pinch's scale since it began, 1 at its
+    /// start. Not a standard: Safari sends a pinch as these, not as the
+    /// ctrl+wheel the other browsers send, so a pane that zooms on a pinch
+    /// listens for both. 1 for any other event.
+    public var webKitGestureScale: Double {
+      event_webKitGestureScale(payload.ptr, Int32(payload.len))
+    }
+
     public var button: Int {
       Int(event_button(payload.ptr, Int32(payload.len)))
     }
@@ -682,6 +691,9 @@
   /// 0 shift, 1 ctrl, 2 alt, 3 meta.
   @_extern(wasm, module: "env", name: "event_modifierKey")
   func event_modifierKey(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ key: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_webKitGestureScale")
+  func event_webKitGestureScale(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
 
   @_extern(wasm, module: "env", name: "event_deltaY")
   func event_deltaY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
