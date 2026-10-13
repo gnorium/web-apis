@@ -125,6 +125,12 @@
       querySelector("body")!
     }
 
+    /// The root element, `<html>`. Its `clientWidth` and `clientHeight` are
+    /// the viewport less any scrollbar, where `window.innerWidth` counts it.
+    public var documentElement: DOM.Element {
+      querySelector(":root")!
+    }
+
     public var activeElement: DOM.Element? {
       let elementID = document_getActiveElement()
       return elementID >= 0 ? ElementFactory.create(id: elementID) : nil
