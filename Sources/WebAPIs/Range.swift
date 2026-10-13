@@ -47,6 +47,35 @@
           top: buffer[4], right: buffer[5], bottom: buffer[6], left: buffer[7])
       }
 
+      /// `getClientRects()`: a box for each piece of what it spans as it is
+      /// laid out, a text node's for each line it is set on.
+      public func getClientRects() -> [DOM.Rect] {
+        var capacity = Self.clientRectsCapacity
+        while true {
+          let buffer = UnsafeMutablePointer<Double>.allocate(capacity: capacity * Self.rectValues)
+          defer { buffer.deallocate() }
+          let count = Int(range_getClientRects(handle, buffer, Int32(capacity)))
+          if count > capacity {
+            capacity = count
+            continue
+          }
+          var rects: [DOM.Rect] = []
+          for index in 0..<count {
+            let at = index * Self.rectValues
+            rects.append(
+              DOM.Rect(
+                x: buffer[at], y: buffer[at + 1], width: buffer[at + 2], height: buffer[at + 3],
+                top: buffer[at + 4], right: buffer[at + 5], bottom: buffer[at + 6], left: buffer[at + 7]))
+          }
+          return rects
+        }
+      }
+
+      /// The values a rect takes in the bridge's buffer.
+      static let rectValues = 8
+      /// The rects `getClientRects` first makes room for: a few lines.
+      static let clientRectsCapacity = 8
+
       /// `toString()`: the text it spans, its text nodes' text in document
       /// order.
       public func toString() -> String {
@@ -78,6 +107,12 @@
 
   @_extern(wasm, module: "env", name: "range_getBoundingClientRect")
   func range_getBoundingClientRect(_ handle: Int32, _ buffer: UnsafeMutablePointer<Double>) -> Int32
+
+  /// A Range's client rects into `buffer` (eight values each, as
+  /// `range_getBoundingClientRect` writes one), at most `capacity` of them;
+  /// returns how many it has.
+  @_extern(wasm, module: "env", name: "range_getClientRects")
+  func range_getClientRects(_ handle: Int32, _ buffer: UnsafeMutablePointer<Double>, _ capacity: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "range_collapsed")
   func range_collapsed(_ handle: Int32) -> Int32
