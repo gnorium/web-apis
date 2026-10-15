@@ -313,6 +313,28 @@
       }
     }
 
+    /// The same, in a named group a later `Fragments.abort(group)` cancels:
+    /// an aborted load calls back `false`.
+    public func loadFragment(_ url: String, group: String, _ callback: @escaping @Sendable (Bool) -> Void) {
+      let callbackID = CallbackRegistry.registerOnce { result in
+        callback(stringEquals(result.toString(), "ok"))
+      }
+      var urlBuffer = Array(url.utf8)
+      urlBuffer.append(0)
+      var groupBuffer = Array(group.utf8)
+      groupBuffer.append(0)
+      urlBuffer.withUnsafeBufferPointer { urlPtr in
+        groupBuffer.withUnsafeBufferPointer { groupPtr in
+          urlPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { urlPointer in
+            groupPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: groupBuffer.count) { groupPointer in
+              element_loadFragmentInGroup(
+                id, urlPointer, Int32(url.utf8.count), groupPointer, Int32(group.utf8.count), Int32(callbackID))
+            }
+          }
+        }
+      }
+    }
+
     /// The same, posting a form's fields as the fetch's body—what `fetch`
     /// sends given `new FormData(form)`—so a text being edited is sent from
     /// the page itself and never passes through wasm memory either.
@@ -520,6 +542,28 @@
   func element_setAttribute(
     _ elementID: Int32, _ namePointer: UnsafePointer<CChar>, _ nameLen: Int32,
     _ valuePointer: UnsafePointer<CChar>, _ valueLen: Int32)
+
+  @_extern(wasm, module: "env", name: "element_loadFragmentInGroup")
+  func element_loadFragmentInGroup(
+    _ elementID: Int32, _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ groupPointer: UnsafePointer<CChar>,
+    _ groupLen: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "fragments_abort")
+  func fragments_abort(_ groupPointer: UnsafePointer<CChar>, _ groupLen: Int32)
+
+  /// Fragment loads in flight, by the group they were started in.
+  public enum Fragments {
+    /// Every load of `group` still in flight cancelled (`AbortController`).
+    public static func abort(_ group: String) {
+      var buffer = Array(group.utf8)
+      buffer.append(0)
+      buffer.withUnsafeBufferPointer { pointer in
+        pointer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) {
+          fragments_abort($0, Int32(group.utf8.count))
+        }
+      }
+    }
+  }
 
   @_extern(wasm, module: "env", name: "element_loadFragment")
   func element_loadFragment(
