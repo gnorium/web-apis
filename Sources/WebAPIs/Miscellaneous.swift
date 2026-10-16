@@ -54,30 +54,6 @@
     return String(decoding: resultBuffer[0..<Int(resultLen)], as: UTF8.self)
   }
 
-  /// The exact instant an ISO 8601 string names, in the reader's zone and
-  /// locale, to the second and with the zone: "Oct 16, 2026 at 12:52:22 PM
-  /// GMT+5:30". Nil if the string is invalid.
-  public func formatLocalInstant(_ isoString: String) -> String? {
-    var isoBuffer = Array(isoString.utf8)
-    isoBuffer.append(0)
-
-    var resultBuffer = [UInt8](repeating: 0, count: 256)
-    let resultLen = isoBuffer.withUnsafeBufferPointer { isoPtr in
-      resultBuffer.withUnsafeMutableBufferPointer { resultPtr in
-        isoPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: isoBuffer.count) {
-          cCharPtr in
-          date_formatLocalInstant(
-            cCharPtr, Int32(isoBuffer.count - 1),
-            resultPtr.baseAddress!, Int32(resultPtr.count)
-          )
-        }
-      }
-    }
-
-    guard resultLen > 0 else { return nil }
-    return String(decoding: resultBuffer[0..<Int(resultLen)], as: UTF8.self)
-  }
-
   @_extern(wasm, module: "env", name: "timing_setTimeout")
   private func timing_setTimeout(_ ms: Int32, _ callbackID: Int32) -> Int32
 
@@ -86,12 +62,6 @@
 
   @_extern(wasm, module: "env", name: "date_formatLocal")
   private func date_formatLocal(
-    _ isoPointer: UnsafePointer<CChar>, _ isoLen: Int32,
-    _ buffer: UnsafeMutablePointer<UInt8>, _ bufferLen: Int32
-  ) -> Int32
-
-  @_extern(wasm, module: "env", name: "date_formatLocalInstant")
-  private func date_formatLocalInstant(
     _ isoPointer: UnsafePointer<CChar>, _ isoLen: Int32,
     _ buffer: UnsafeMutablePointer<UInt8>, _ bufferLen: Int32
   ) -> Int32
