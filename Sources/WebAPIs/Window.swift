@@ -237,8 +237,10 @@
       return window_requestAnimationFrame(Int32(callbackID))
     }
 
+    /// Cancels the frame and lets go of its callback (see `clearTimeout`).
     public func cancelAnimationFrame(_ id: Int32) {
-      window_cancelAnimationFrame(id)
+      let callbackID = window_cancelAnimationFrame(id)
+      if callbackID >= 0 { CallbackRegistry.unregister(callbackID) }
     }
 
     @discardableResult
@@ -249,8 +251,11 @@
       return window_setTimeout(ms, Int32(callbackID))
     }
 
+    /// Clears the timer and lets go of its callback, which would otherwise
+    /// stay registered for good (it is let go only as it runs).
     public func clearTimeout(_ timerID: Int32) {
-      window_clearTimeout(timerID)
+      let callbackID = window_clearTimeout(timerID)
+      if callbackID >= 0 { CallbackRegistry.unregister(callbackID) }
     }
 
     /// Standard scrollTo API - scrolls to specified coordinates
@@ -335,13 +340,13 @@
   func window_requestAnimationFrame(_ callbackID: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "window_cancelAnimationFrame")
-  func window_cancelAnimationFrame(_ id: Int32)
+  func window_cancelAnimationFrame(_ id: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "window_setTimeout")
   func window_setTimeout(_ ms: Double, _ callbackID: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "window_clearTimeout")
-  func window_clearTimeout(_ timerID: Int32)
+  func window_clearTimeout(_ timerID: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "window_scrollTo")
   func window_scrollTo(_ x: Double, _ y: Double, _ behavior: Int32)
