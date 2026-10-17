@@ -323,6 +323,27 @@
       }
     }
 
+    /// `loadFragment` for a fragment too long to parse in one task: its
+    /// markup cut where it holds `<!--part-->` comments, each part parsed
+    /// in a task of its own (`requestIdleCallback`, as many parts a task as
+    /// its `timeRemaining()` allows, one at least), into a detached copy of
+    /// the element the first part opens, then set as this element's
+    /// children once whole. A part's markup closes what it opens, so a
+    /// part is parsed alone as it would be in place; the comments are not
+    /// kept.
+    public func loadFragmentInParts(_ url: String, _ callback: @escaping @Sendable (Bool) -> Void) {
+      let callbackID = CallbackRegistry.registerOnce { result in
+        callback(stringEquals(result.toString(), "ok"))
+      }
+      var urlBuffer = Array(url.utf8)
+      urlBuffer.append(0)
+      urlBuffer.withUnsafeBufferPointer { urlPtr in
+        urlPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: urlBuffer.count) { urlPointer in
+          element_loadFragmentInParts(id, urlPointer, Int32(url.utf8.count), Int32(callbackID))
+        }
+      }
+    }
+
     /// The same, in a named group a later `Fragments.abort(group)` cancels:
     /// an aborted load calls back `false`.
     public func loadFragment(_ url: String, group: String, _ callback: @escaping @Sendable (Bool) -> Void) {
@@ -585,6 +606,10 @@
       }
     }
   }
+
+  @_extern(wasm, module: "env", name: "element_loadFragmentInParts")
+  func element_loadFragmentInParts(
+    _ elementID: Int32, _ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32, _ callbackID: Int32)
 
   @_extern(wasm, module: "env", name: "element_loadFragment")
   func element_loadFragment(

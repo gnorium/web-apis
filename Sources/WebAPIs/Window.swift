@@ -237,6 +237,18 @@
       return window_requestAnimationFrame(Int32(callbackID))
     }
 
+    /// `requestAnimationFrame(callback)` with the frame's timestamp, as the
+    /// standard hands it (`DOMHighResTimeStamp`, ms on `performance.now()`'s
+    /// clock): the same for every callback of one frame, so work shared
+    /// by a frame's callbacks can tell its frame from the next.
+    @discardableResult
+    public func requestAnimationFrame(timed callback: @escaping @Sendable (Double) -> Void) -> Int32 {
+      let callbackID = CallbackRegistry.registerOnce { payload in
+        callback(parseDouble(payload.toString()) ?? 0)
+      }
+      return window_requestAnimationFrame(Int32(callbackID))
+    }
+
     /// Cancels the frame and lets go of its callback (see `clearTimeout`).
     public func cancelAnimationFrame(_ id: Int32) {
       let callbackID = window_cancelAnimationFrame(id)
