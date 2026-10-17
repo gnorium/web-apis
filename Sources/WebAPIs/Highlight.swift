@@ -28,6 +28,16 @@
       highlight_delete(handle, range.handle)
     }
 
+    /// `add(range)`, a `StaticRange`.
+    public func add(_ range: DOM.StaticRange) {
+      highlight_add(handle, range.handle)
+    }
+
+    /// `delete(range)`, a `StaticRange`.
+    public func delete(_ range: DOM.StaticRange) {
+      highlight_delete(handle, range.handle)
+    }
+
     /// `clear()`.
     public func clear() {
       highlight_clear(handle)

@@ -258,6 +258,38 @@
       if callbackID >= 0 { CallbackRegistry.unregister(callbackID) }
     }
 
+    /// `requestIdleCallback(callback, { timeout })`: `callback` when the
+    /// browser is idle—after a frame's work, while nothing waits on the
+    /// main thread—or, with a `timeout` above 0, no later than that many
+    /// ms. It is handed the `IdleDeadline`, whose `timeRemaining()` says
+    /// how long it may run. Where the browser has none (WebKit), a task
+    /// after the next frame with a 50 ms period, the standard's longest.
+    @discardableResult
+    public func requestIdleCallback(timeout: Double = 0, _ callback: @escaping @Sendable (IdleDeadline) -> Void) -> Int32 {
+      let callbackID = CallbackRegistry.registerOnce { payload in
+        callback(IdleDeadline(didTimeout: stringEquals(payload.toString(), "1")))
+      }
+      return window_requestIdleCallback(timeout, Int32(callbackID))
+    }
+
+    /// `cancelIdleCallback(id)`, its callback let go (see `clearTimeout`).
+    public func cancelIdleCallback(_ id: Int32) {
+      let callbackID = window_cancelIdleCallback(id)
+      if callbackID >= 0 { CallbackRegistry.unregister(callbackID) }
+    }
+
+    /// The `IdleDeadline` an idle callback is handed: valid while it runs.
+    public struct IdleDeadline: Sendable {
+      /// `didTimeout`: called because its timeout passed, not because the
+      /// browser was idle (`timeRemaining()` is then 0).
+      public let didTimeout: Bool
+
+      /// `timeRemaining()`: the ms left of this idle period, now.
+      public func timeRemaining() -> Double {
+        idleDeadline_timeRemaining()
+      }
+    }
+
     /// Standard scrollTo API - scrolls to specified coordinates
     /// - Parameters:
     ///   - x: X coordinate to scroll to
@@ -347,6 +379,15 @@
 
   @_extern(wasm, module: "env", name: "window_clearTimeout")
   func window_clearTimeout(_ timerID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_requestIdleCallback")
+  func window_requestIdleCallback(_ timeout: Double, _ callbackID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "window_cancelIdleCallback")
+  func window_cancelIdleCallback(_ id: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "idleDeadline_timeRemaining")
+  func idleDeadline_timeRemaining() -> Double
 
   @_extern(wasm, module: "env", name: "window_scrollTo")
   func window_scrollTo(_ x: Double, _ y: Double, _ behavior: Int32)

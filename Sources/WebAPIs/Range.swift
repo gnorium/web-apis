@@ -89,6 +89,27 @@
     }
   }
 
+  extension DOM {
+    /// The DOM's own `StaticRange`: a stretch between two boundary points
+    /// that, unlike a `Range`, the browser never moves as the document
+    /// changes—nothing to keep up to date with each edit of the page, so
+    /// as many as a long text's stretches cost nothing while it grows. Made
+    /// in one call, as `new StaticRange({ startContainer, startOffset,
+    /// endContainer, endOffset })`; a `Highlight` paints it as it does a
+    /// `Range`.
+    public final class StaticRange: @unchecked Sendable {
+      let handle: Int32
+
+      public init(_ startContainer: DOM.Node, _ startOffset: Int, _ endContainer: DOM.Node, _ endOffset: Int) {
+        handle = staticRange_create(startContainer.id, Int32(startOffset), endContainer.id, Int32(endOffset))
+      }
+
+      deinit {
+        domObject_release(handle)
+      }
+    }
+  }
+
   extension Document {
     /// `document.createRange()`.
     public func createRange() -> DOM.Range {
@@ -98,6 +119,9 @@
 
   @_extern(wasm, module: "env", name: "range_create")
   func range_create() -> Int32
+
+  @_extern(wasm, module: "env", name: "staticRange_create")
+  func staticRange_create(_ startID: Int32, _ startOffset: Int32, _ endID: Int32, _ endOffset: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "range_setStart")
   func range_setStart(_ handle: Int32, _ nodeID: Int32, _ offset: Int32)

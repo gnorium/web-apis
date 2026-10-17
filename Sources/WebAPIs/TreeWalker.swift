@@ -33,9 +33,14 @@
       }
 
       /// `currentNode`: where the walker stands (the root before the first
-      /// `nextNode()`).
+      /// `nextNode()`). Set, the walk goes on from there: `nextNode()`
+      /// answers the node after it.
       public var currentNode: DOM.Node? {
-        bridgedNode(treeWalker_currentNode(handle))
+        get { bridgedNode(treeWalker_currentNode(handle)) }
+        set {
+          guard let node = newValue else { return }
+          treeWalker_setCurrentNode(handle, node.id)
+        }
       }
     }
   }
@@ -85,6 +90,9 @@
 
   @_extern(wasm, module: "env", name: "treeWalker_currentNode")
   func treeWalker_currentNode(_ handle: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "treeWalker_setCurrentNode")
+  func treeWalker_setCurrentNode(_ handle: Int32, _ nodeID: Int32)
 
   @_extern(wasm, module: "env", name: "node_nodeType")
   func node_nodeType(_ nodeID: Int32) -> Int32

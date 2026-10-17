@@ -20,6 +20,25 @@
     }
   }
 
+  extension DOM.Text {
+    /// `CharacterData.substringData(offset, count)`: `count` UTF-16 code
+    /// units of its text from `offset`—what was added to a text that grows
+    /// read alone, never the whole again.
+    public func substringData(_ offset: Int, _ count: Int) -> String {
+      // UTF-8 spends at most three bytes on a UTF-16 unit.
+      var capacity = count * 3
+      while true {
+        var buffer = [UInt8](repeating: 0, count: capacity + 1)
+        let length = characterData_substringData(id, Int32(offset), Int32(count), &buffer, Int32(capacity + 1))
+        if length >= 0 { return String(decoding: buffer[0..<Int(length)], as: UTF8.self) }
+        // Too small: the bridge answers -(bytes + 1).
+        let needed = Int(-length) - 1
+        if needed <= capacity { return "" }
+        capacity = needed
+      }
+    }
+  }
+
   extension Document {
     /// `document.execCommand(command, false, value)`: an editing command on
     /// the focused editing host's selection, entered in its undo history as
@@ -45,6 +64,11 @@
   @_extern(wasm, module: "env", name: "characterData_replaceData")
   func characterData_replaceData(
     _ nodeID: Int32, _ offset: Int32, _ count: Int32, _ data: UnsafePointer<UInt8>?, _ length: Int32)
+
+  @_extern(wasm, module: "env", name: "characterData_substringData")
+  func characterData_substringData(
+    _ nodeID: Int32, _ offset: Int32, _ count: Int32, _ buffer: UnsafeMutablePointer<UInt8>, _ bufferLength: Int32
+  ) -> Int32
 
   @_extern(wasm, module: "env", name: "document_execCommand")
   func document_execCommand(
