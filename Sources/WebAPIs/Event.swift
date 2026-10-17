@@ -49,6 +49,8 @@
       case dragover = "dragover"
       case drop = "drop"
       case fullscreenchange = "fullscreenchange"
+      case close = "close"
+      case cancel = "cancel"
 
       public var staticString: StaticString {
         switch self {
@@ -97,6 +99,8 @@
         case .dragover: return "dragover"
         case .drop: return "drop"
         case .fullscreenchange: return "fullscreenchange"
+        case .close: return "close"
+        case .cancel: return "cancel"
         }
       }
     }
@@ -146,6 +150,8 @@
     public static let dragover: StaticString = "dragover"
     public static let drop: StaticString = "drop"
     public static let fullscreenchange: StaticString = "fullscreenchange"
+    public static let close: StaticString = "close"
+    public static let cancel: StaticString = "cancel"
 
     // Event instance properties (Placeholder for server-side event objects if needed)
     public let detail: String
@@ -213,6 +219,8 @@
       case fullscreenchange
       case error
       case contextmenu
+      case close
+      case cancel
 
       public var rawValue: String {
         switch self {
@@ -263,6 +271,8 @@
         case .fullscreenchange: return "fullscreenchange"
         case .error: return "error"
         case .contextmenu: return "contextmenu"
+        case .close: return "close"
+        case .cancel: return "cancel"
         }
       }
 
@@ -359,6 +369,10 @@
           self = .error
         } else if stringEquals(rawValue, "contextmenu") {
           self = .contextmenu
+        } else if stringEquals(rawValue, "close") {
+          self = .close
+        } else if stringEquals(rawValue, "cancel") {
+          self = .cancel
         } else {
           return nil
         }
@@ -413,6 +427,8 @@
         case .fullscreenchange: return "fullscreenchange"
         case .error: return "error"
         case .contextmenu: return "contextmenu"
+        case .close: return "close"
+        case .cancel: return "cancel"
         }
       }
     }
@@ -463,6 +479,8 @@
     public static let drop: StaticString = "drop"
     public static let fullscreenchange: StaticString = "fullscreenchange"
     public static let error: StaticString = "error"
+    public static let close: StaticString = "close"
+    public static let cancel: StaticString = "cancel"
 
     // Event instance properties
     private let parsedDetail: String

@@ -24,6 +24,8 @@ import WebTypes
           return HTML.HTMLOptionElement(id: id)
         } else if stringEquals(tagName, "FORM") {
           return HTML.HTMLFormElement(id: id)
+        } else if stringEquals(tagName, "DIALOG") {
+          return HTML.HTMLDialogElement(id: id)
         } else {
           return HTML.HTMLElement(id: id)
         }

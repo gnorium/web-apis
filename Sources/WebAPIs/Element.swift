@@ -272,6 +272,16 @@
       element_isImageLoaded(Int32(id)) != 0
     }
 
+    /// `HTMLImageElement.naturalWidth` and `naturalHeight`: the image's own
+    /// pixels, 0 until it is read (and for any element that is no image).
+    public var naturalWidth: Double {
+      element_naturalWidth(Int32(id))
+    }
+
+    public var naturalHeight: Double {
+      element_naturalHeight(Int32(id))
+    }
+
     public var inputValue: String {
       var buffer = [UInt8](repeating: 0, count: 256)
       let len = element_getInputValue(Int32(id), &buffer, 256)
@@ -391,7 +401,12 @@
 
     // Observe size changes via ResizeObserver. Callback receives (width, height) in CSS pixels.
     // JS encodes payload as "width,height" (e.g. "800.0,600.0").
-    public func observeResize(_ callback: @escaping @Sendable (Double, Double) -> Void) {
+    //
+    // The handle stops it (`unobserveResize`), which also lets go of the
+    // callback: a view that leaves the page does so, or its callback and the
+    // element it watches stay for the page's life.
+    @discardableResult
+    public func observeResize(_ callback: @escaping @Sendable (Double, Double) -> Void) -> Int32 {
       let callbackID = CallbackRegistry.register { payload in
         let str = payload.toString()
         let parts = stringSplit(str, separator: ",")
@@ -400,7 +415,13 @@
         let h = parseDouble(parts[1]) ?? 0
         callback(w, h)
       }
-      element_observeResize(Int32(id), Int32(callbackID))
+      return element_observeResize(Int32(id), Int32(callbackID))
+    }
+
+    /// Stops an `observeResize`.
+    public func unobserveResize(_ handle: Int32) {
+      let callbackID = element_unobserveResize(handle)
+      if callbackID >= 0 { CallbackRegistry.unregister(callbackID) }
     }
 
     /// `IntersectionObserver` on this element: `callback` says, whenever it
@@ -622,8 +643,17 @@
   @_extern(wasm, module: "env", name: "element_isImageLoaded")
   func element_isImageLoaded(_ elementID: Int32) -> Int32
 
+  @_extern(wasm, module: "env", name: "element_naturalWidth")
+  func element_naturalWidth(_ elementID: Int32) -> Double
+
+  @_extern(wasm, module: "env", name: "element_naturalHeight")
+  func element_naturalHeight(_ elementID: Int32) -> Double
+
   @_extern(wasm, module: "env", name: "element_observeResize")
-  func element_observeResize(_ elementID: Int32, _ callbackID: Int32)
+  func element_observeResize(_ elementID: Int32, _ callbackID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "element_unobserveResize")
+  func element_unobserveResize(_ handle: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "element_observeIntersection")
   func element_observeIntersection(
@@ -640,16 +670,19 @@
   func element_requestFullscreen(_ elementID: Int32)
 
   @_extern(wasm, module: "env", name: "artifact_preloadImages")
-  func artifact_preloadImages(_ urlsPointer: UnsafePointer<CChar>, _ urlsLen: Int32)
+  func artifact_preloadImages(_ urlsPointer: UnsafePointer<CChar>, _ urlsLen: Int32, _ timeout: Double)
 
-  public func preloadImages(urls: [String]) {
-    guard !urls.isEmpty else { return }
+  /// Fetches `urls` ahead, at low priority, as many at once as a browser
+  /// sends to one host over HTTP/1.1; each let go after `timeout`
+  /// milliseconds (0: the browser's own limit). A new batch stops the last
+  /// one's loads it does not ask for again.
+  public func preloadImages(urls: [String], timeout: Double) {
     let joined = urls.joined(separator: "\n")
     var buffer = Array(joined.utf8)
     buffer.append(0)
     buffer.withUnsafeBufferPointer { ptr in
       ptr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { cPtr in
-        artifact_preloadImages(cPtr, Int32(buffer.count - 1))
+        artifact_preloadImages(cPtr, Int32(buffer.count - 1), timeout)
       }
     }
   }
