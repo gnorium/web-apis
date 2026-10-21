@@ -155,6 +155,23 @@
       element_click(id)
     }
 
+    /// `setPointerCapture(pointerId)`: the pointer's later events (moves, its
+    /// release, its cancel) are this element's wherever the pointer goes,
+    /// until it is let go or `releasePointerCapture`.
+    public func setPointerCapture(_ pointerId: Int) {
+      element_setPointerCapture(id, Int32(pointerId))
+    }
+
+    /// `releasePointerCapture(pointerId)`.
+    public func releasePointerCapture(_ pointerId: Int) {
+      element_releasePointerCapture(id, Int32(pointerId))
+    }
+
+    /// `hasPointerCapture(pointerId)`.
+    public func hasPointerCapture(_ pointerId: Int) -> Bool {
+      element_hasPointerCapture(id, Int32(pointerId)) != 0
+    }
+
     public func blur() {
       element_blur(id)
     }
@@ -545,6 +562,15 @@
 
   @_extern(wasm, module: "env", name: "element_setIndeterminate")
   func element_setIndeterminate(_ elementID: Int32, _ value: Int32)
+
+  @_extern(wasm, module: "env", name: "element_setPointerCapture")
+  func element_setPointerCapture(_ elementID: Int32, _ pointerId: Int32)
+
+  @_extern(wasm, module: "env", name: "element_releasePointerCapture")
+  func element_releasePointerCapture(_ elementID: Int32, _ pointerId: Int32)
+
+  @_extern(wasm, module: "env", name: "element_hasPointerCapture")
+  func element_hasPointerCapture(_ elementID: Int32, _ pointerId: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "element_focus")
   func element_focus(_ elementID: Int32)

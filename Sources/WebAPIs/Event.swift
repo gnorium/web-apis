@@ -553,6 +553,12 @@
       return ""
     }
 
+    /// `PointerEvent.pointerId`: the pointer that fired it, for
+    /// `Element.setPointerCapture`; -1 for any other event.
+    public var pointerId: Int {
+      Int(event_pointerId(payload.ptr, Int32(payload.len)))
+    }
+
     /// `TransitionEvent.propertyName`: the CSS property whose transition
     /// ran, ended or was cancelled ("transform"); "" for any other event.
     public var propertyName: String {
@@ -643,6 +649,9 @@
     _ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32, _ buffer: UnsafeMutablePointer<CChar>,
     _ bufferLen: Int32
   ) -> Int32
+
+  @_extern(wasm, module: "env", name: "event_pointerId")
+  func event_pointerId(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "event_pointerType")
   func event_pointerType(
