@@ -36,14 +36,16 @@
       }
     }
 
-    public func getItem(_ key: String) -> String? {
-      var buffer = [UInt8](repeating: 0, count: 1024)
+    /// The value kept under `key`, read up to `capacity` bytes (a longer one
+    /// reads cut short, so keep to values that fit).
+    public func getItem(_ key: String, capacity: Int = 1024) -> String? {
+      var buffer = [UInt8](repeating: 0, count: capacity)
       var keyBuffer = Array(key.utf8)
       keyBuffer.append(0)
       return keyBuffer.withUnsafeBufferPointer { keyPtr in
         keyPtr.baseAddress!.withMemoryRebound(to: CChar.self, capacity: keyBuffer.count) {
           keyPointer in
-          let len = get(keyPointer, Int32(keyBuffer.count - 1), &buffer, 1024)
+          let len = get(keyPointer, Int32(keyBuffer.count - 1), &buffer, Int32(capacity))
           return len >= 0 ? String(decoding: buffer[0..<Int(len)], as: UTF8.self) : nil
         }
       }
