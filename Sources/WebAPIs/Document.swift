@@ -61,6 +61,9 @@
       }
     }
 
+    /// Whether the page is not being shown (`document.hidden`): a background tab.
+    public var isHidden: Bool { document_isHidden() != 0 }
+
     /// The topmost element at a point of the viewport, as `document.elementFromPoint`
     /// answers it; nil outside the viewport.
     public func elementFromPoint(_ x: Double, _ y: Double) -> DOM.Element? {
@@ -278,6 +281,9 @@
 
   @_extern(wasm, module: "env", name: "document_getActiveElement")
   func document_getActiveElement() -> Int32
+
+  @_extern(wasm, module: "env", name: "document_isHidden")
+  func document_isHidden() -> Int32
 
   @_extern(wasm, module: "env", name: "document_elementFromPoint")
   func document_elementFromPoint(_ x: Double, _ y: Double) -> Int32
