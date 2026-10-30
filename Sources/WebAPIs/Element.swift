@@ -219,6 +219,19 @@
       return nil
     }
 
+    /// `SVGGraphicsElement.getBBox()`: the box of its content in its own
+    /// user space (an `<svg>`'s, in its viewBox's units); nil for an element
+    /// that is no SVG graphic, or one not rendered.
+    public func getBBox() -> DOM.Rect? {
+      let buffer = UnsafeMutablePointer<Double>.allocate(capacity: 8)
+      defer { buffer.deallocate() }
+      guard element_getBBox(id, buffer) != 0 else { return nil }
+      return DOM.Rect(
+        x: buffer[0], y: buffer[1], width: buffer[2], height: buffer[3],
+        top: buffer[4], right: buffer[5], bottom: buffer[6], left: buffer[7]
+      )
+    }
+
     public func closest(_ selector: String) -> DOM.Element? {
       var buffer = Array(selector.utf8)
       buffer.append(0)
@@ -617,6 +630,9 @@
   @_extern(wasm, module: "env", name: "element_getBoundingClientRect")
   func element_getBoundingClientRect(_ elementID: Int32, _ buffer: UnsafeMutablePointer<Double>)
     -> Int32
+
+  @_extern(wasm, module: "env", name: "element_getBBox")
+  func element_getBBox(_ elementID: Int32, _ buffer: UnsafeMutablePointer<Double>) -> Int32
 
   @_extern(wasm, module: "env", name: "element_closest")
   func element_closest(
