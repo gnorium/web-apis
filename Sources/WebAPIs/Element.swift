@@ -524,6 +524,24 @@
       }
       element_requestFullscreen(Int32(id), Int32(callbackID))
     }
+
+    /// `showPopover()`: the element into the top layer—over everything on
+    /// the page whatever its z-index or the stacking context it stands
+    /// in, as a modal dialog goes—with its `::backdrop` right under it;
+    /// the page behind stays live, and a `manual` popover stays until
+    /// `hidePopover`. It needs a `popover` attribute. `true` once shown;
+    /// `false` where the platform would throw (no attribute, not in the
+    /// page, already shown) or has no Popover API.
+    @discardableResult
+    public func showPopover() -> Bool {
+      element_showPopover(Int32(id)) != 0
+    }
+
+    /// `hidePopover()`: out of the top layer, back to where it stands.
+    /// One not shown is left as it is.
+    public func hidePopover() {
+      element_hidePopover(Int32(id))
+    }
   }
 
   @_extern(wasm, module: "env", name: "element_getTextContent")
@@ -726,6 +744,12 @@
 
   @_extern(wasm, module: "env", name: "element_requestFullscreen")
   func element_requestFullscreen(_ elementID: Int32, _ callbackID: Int32)
+
+  @_extern(wasm, module: "env", name: "element_showPopover")
+  func element_showPopover(_ elementID: Int32) -> Int32
+
+  @_extern(wasm, module: "env", name: "element_hidePopover")
+  func element_hidePopover(_ elementID: Int32)
 
   @_extern(wasm, module: "env", name: "artifact_preloadImages")
   func artifact_preloadImages(_ urlsPointer: UnsafePointer<CChar>, _ urlsLen: Int32, _ timeout: Double)
