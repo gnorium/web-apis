@@ -163,6 +163,13 @@
       document_isFullscreen() != 0
     }
 
+    /// `document.fullscreenEnabled`: whether a fullscreen request could be
+    /// granted at all (false in an iframe without `allowfullscreen`, on an
+    /// iPhone, in a webview that withholds it).
+    public var fullscreenEnabled: Bool {
+      document_fullscreenEnabled() != 0
+    }
+
     public func setCookie(name: String, value: String, maxAge: Int32) {
       var nameBuf = Array(name.utf8)
       nameBuf.append(0)
@@ -299,6 +306,9 @@
 
   @_extern(wasm, module: "env", name: "document_isFullscreen")
   func document_isFullscreen() -> Int32
+
+  @_extern(wasm, module: "env", name: "document_fullscreenEnabled")
+  func document_fullscreenEnabled() -> Int32
 
   @_extern(wasm, module: "env", name: "document_setCookie")
   func document_setCookie(

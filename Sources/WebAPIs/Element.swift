@@ -514,8 +514,15 @@
       }
     }
 
-    public func requestFullscreen() {
-      element_requestFullscreen(Int32(id))
+    /// `requestFullscreen()`, its promise as a callback: `true` once the
+    /// element is fullscreen, `false` when the request is rejected
+    /// (fullscreen not enabled, a permission refused, no user activation)
+    /// or the browser has no Fullscreen API.
+    public func requestFullscreen(_ completion: @escaping @Sendable (Bool) -> Void) {
+      let callbackID = CallbackRegistry.registerOnce { result in
+        completion(stringEquals(result.toString(), "ok"))
+      }
+      element_requestFullscreen(Int32(id), Int32(callbackID))
     }
   }
 
@@ -718,7 +725,7 @@
   func element_getInputValue(_ elementID: Int32, _ buffer: UnsafeMutablePointer<UInt8>, _ maxLen: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "element_requestFullscreen")
-  func element_requestFullscreen(_ elementID: Int32)
+  func element_requestFullscreen(_ elementID: Int32, _ callbackID: Int32)
 
   @_extern(wasm, module: "env", name: "artifact_preloadImages")
   func artifact_preloadImages(_ urlsPointer: UnsafePointer<CChar>, _ urlsLen: Int32, _ timeout: Double)
