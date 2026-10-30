@@ -3,7 +3,12 @@
   public struct CustomEvent {
     private let eventPointer: Int32
 
-    public init(type: String, detail: String) {
+    /// An event of `type` carrying `detail`. As the standard's
+    /// `CustomEventInit`, it does not bubble unless `bubbles` is asked for:
+    /// one dispatched on an element reaches only that element's listeners
+    /// (and ancestors' capturing ones); bubbling, it reaches the document's
+    /// as a click does (a gloss opened from the image, `GlossHydration`).
+    public init(type: String, detail: String, bubbles: Bool = false) {
       var typeBuffer = Array(type.utf8)
       typeBuffer.append(0)
       var detailBuffer = Array(detail.utf8)
@@ -17,7 +22,7 @@
             detailBufferPtr.baseAddress!.withMemoryRebound(
               to: CChar.self, capacity: detailBuffer.count
             ) { detailPtr in
-              ptr = _createCustomEvent(typePtr, detailPtr)
+              ptr = _createCustomEvent(typePtr, detailPtr, bubbles ? 1 : 0)
             }
           }
         }
@@ -45,7 +50,7 @@
   }
 
   @_extern(wasm, module: "env", name: "createCustomEvent")
-  private func _createCustomEvent(_ type: UnsafePointer<CChar>, _ detail: UnsafePointer<CChar>)
+  private func _createCustomEvent(_ type: UnsafePointer<CChar>, _ detail: UnsafePointer<CChar>, _ bubbles: Int32)
     -> Int32
 
   @_extern(wasm, module: "env", name: "getCustomEventDetail")
