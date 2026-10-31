@@ -533,6 +533,13 @@
       event_isTrusted(payload.ptr, Int32(payload.len)) != 0
     }
 
+    /// `PageTransitionEvent.persisted`: true for a `pageshow` that restored
+    /// the page from the back-forward cache, false for its first load (and
+    /// for any event that is not a page transition).
+    public var persisted: Bool {
+      event_persisted(payload.ptr, Int32(payload.len)) != 0
+    }
+
     public var key: String {
       var buffer = [UInt8](repeating: 0, count: 64)
       let len = event_getKey(payload.ptr, Int32(payload.len), &buffer, 64)
@@ -676,6 +683,8 @@
 
   @_extern(wasm, module: "env", name: "event_isTrusted")
   func event_isTrusted(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
+  @_extern(wasm, module: "env", name: "event_persisted")
+  func event_persisted(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "event_stopPropagation")
   func event_stopPropagation(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32)
