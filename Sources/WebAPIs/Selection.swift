@@ -53,6 +53,13 @@
       window_selectionCollapse(node.id, Int32(offset))
     }
 
+    /// `Selection.containsNode(node, allowPartialContainment)`: whether
+    /// `node` is in the selection, wholly or, with partial containment
+    /// allowed, in part.
+    public func containsNode(_ node: DOM.Node, allowPartialContainment: Bool = false) -> Bool {
+      window_selectionContainsNode(node.id, allowPartialContainment ? 1 : 0) != 0
+    }
+
     /// `Selection.toString()`: the selected text.
     public func toString() -> String {
       let length = Int(window_selectionLength())
@@ -95,6 +102,9 @@
 
   @_extern(wasm, module: "env", name: "window_selectionCollapse")
   func window_selectionCollapse(_ nodeID: Int32, _ offset: Int32)
+
+  @_extern(wasm, module: "env", name: "window_selectionContainsNode")
+  func window_selectionContainsNode(_ nodeID: Int32, _ partial: Int32) -> Int32
 
   @_extern(wasm, module: "env", name: "window_selectionRangeCount")
   func window_selectionRangeCount() -> Int32
