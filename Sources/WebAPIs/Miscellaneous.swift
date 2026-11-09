@@ -55,8 +55,8 @@
   }
 
   /// The exact instant an ISO 8601 string names, in the reader's zone and
-  /// locale, to the second and with the zone: "Oct 16, 2026 at 12:52:22 PM
-  /// GMT+5:30". Nil if the string is invalid.
+  /// locale, to the second: "16 Oct 2026 at 12:52:22 PM" (the day first, as
+  /// the loader's `localStamp` writes it). Nil if the string is invalid.
   public func formatLocalInstant(_ isoString: String) -> String? {
     var isoBuffer = Array(isoString.utf8)
     isoBuffer.append(0)
