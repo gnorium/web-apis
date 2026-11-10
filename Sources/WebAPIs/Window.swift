@@ -330,6 +330,13 @@
       }
     }
 
+    /// `history.scrollRestoration`: `manual`, a reload leaves the page's
+    /// scroll to the page (one that lands on its fragment's target
+    /// itself); else the browser puts it back where it was.
+    public func setScrollRestoration(manual: Bool) {
+      history_setScrollRestoration(manual ? 1 : 0)
+    }
+
     public func replaceURL(_ url: String) {
       var buffer = Array(url.utf8)
       buffer.append(0)
@@ -424,6 +431,9 @@
 
   @_extern(wasm, module: "env", name: "window_locationReload")
   func window_locationReload()
+
+  @_extern(wasm, module: "env", name: "history_setScrollRestoration")
+  func history_setScrollRestoration(_ manual: Int32)
 
   @_extern(wasm, module: "env", name: "history_replaceURL")
   func history_replaceURL(_ urlPointer: UnsafePointer<CChar>, _ urlLen: Int32)
