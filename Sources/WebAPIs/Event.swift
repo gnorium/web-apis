@@ -606,6 +606,10 @@
       event_deltaY(payload.ptr, Int32(payload.len))
     }
 
+    public var deltaX: Double {
+      event_deltaX(payload.ptr, Int32(payload.len))
+    }
+
     /// WebKit's `GestureEvent.scale` (`gesturestart`, `gesturechange`,
     /// `gestureend`): a trackpad pinch's scale since it began, 1 at its
     /// start. Not a standard: Safari sends a pinch as these, not as the
@@ -733,4 +737,7 @@
 
   @_extern(wasm, module: "env", name: "event_deltaY")
   func event_deltaY(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
+
+  @_extern(wasm, module: "env", name: "event_deltaX")
+  func event_deltaX(_ eventPtr: UnsafePointer<CChar>, _ eventLen: Int32) -> Double
 #endif
