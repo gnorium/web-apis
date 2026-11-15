@@ -12,6 +12,25 @@
       document_fontsReady(Int32(callbackID))
     }
 
+    /// Every element matching `selector`, now and as it is added, carries
+    /// `attribute` while any of it is within the viewport grown by
+    /// `rootMargin` (CSS margin syntax, "150% 0px"), and loses it once it is
+    /// not: one `IntersectionObserver` for them all, none of it crossing
+    /// into WASM. A page draws what is near before the reader scrolls to it.
+    public func markNear(_ selector: String, rootMargin: String, attribute: String) {
+      var all = Array(selector.utf8) + [0] + Array(rootMargin.utf8) + [0] + Array(attribute.utf8) + [0]
+      let selectorLen = Int32(selector.utf8.count)
+      let marginLen = Int32(rootMargin.utf8.count)
+      let attributeLen = Int32(attribute.utf8.count)
+      all.withUnsafeMutableBufferPointer { buffer in
+        buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { base in
+          document_markNear(
+            base, selectorLen, base + Int(selectorLen) + 1, marginLen, base + Int(selectorLen + marginLen) + 2,
+            attributeLen)
+        }
+      }
+    }
+
     public func querySelector(_ selector: StaticString) -> DOM.Element? {
       return selector.withUTF8Buffer { buffer in
         buffer.baseAddress!.withMemoryRebound(to: CChar.self, capacity: buffer.count) { pointer in
@@ -250,6 +269,11 @@
   }
 
   public let document = Document()
+
+  @_extern(wasm, module: "env", name: "document_markNear")
+  func document_markNear(
+    _ selector: UnsafePointer<CChar>, _ selectorLen: Int32, _ margin: UnsafePointer<CChar>, _ marginLen: Int32,
+    _ attribute: UnsafePointer<CChar>, _ attributeLen: Int32)
 
   @_extern(wasm, module: "env", name: "document_addEventListener")
   func document_addEventListener(
